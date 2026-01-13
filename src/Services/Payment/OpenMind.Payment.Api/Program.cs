@@ -3,6 +3,7 @@ using MassTransit;
 using MediatR;
 using MongoDB.Driver;
 using OpenMind.BuildingBlocks.Application.Behaviors;
+using OpenMind.BuildingBlocks.Infrastructure.Behaviors;
 using OpenMind.BuildingBlocks.Infrastructure.Persistence;
 using OpenMind.Payment.Application.Commands.ProcessPayment;
 using OpenMind.Payment.Domain.Repositories;
@@ -31,6 +32,9 @@ var mongoSettings = builder.Configuration.GetSection("MongoDB").Get<MongoDbSetti
 builder.Services.AddSingleton<IMongoClient>(_ => new MongoClient(mongoSettings.ConnectionString));
 builder.Services.AddScoped(sp => sp.GetRequiredService<IMongoClient>().GetDatabase(mongoSettings.DatabaseName));
 
+// MongoDbContext - handles domain event dispatching
+builder.Services.AddScoped<MongoDbContext>();
+
 // Repositories
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 
@@ -40,6 +44,7 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(ProcessPaymentCommandHandler).Assembly);
     cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
     cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(DomainEventDispatchBehavior<,>));
 });
 
 builder.Services.AddValidatorsFromAssembly(typeof(ProcessPaymentCommandHandler).Assembly);

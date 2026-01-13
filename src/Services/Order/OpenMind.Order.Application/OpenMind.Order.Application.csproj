@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>OpenMind.Order.Application</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MassTransit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\OpenMind.BuildingBlocks.Application\OpenMind.BuildingBlocks.Application.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\OpenMind.BuildingBlocks.IntegrationEvents\OpenMind.BuildingBlocks.IntegrationEvents.csproj" />
+    <ProjectReference Include="..\OpenMind.Order.Domain\OpenMind.Order.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

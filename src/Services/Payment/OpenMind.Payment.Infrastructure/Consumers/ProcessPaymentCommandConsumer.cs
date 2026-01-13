@@ -5,17 +5,8 @@ using AppCommand = OpenMind.Payment.Application.Commands.ProcessPayment;
 
 namespace OpenMind.Payment.Infrastructure.Consumers;
 
-public class ProcessPaymentCommandConsumer : IConsumer<ProcessPaymentCommand>
+public class ProcessPaymentCommandConsumer(IMediator mediator) : IConsumer<ProcessPaymentCommand>
 {
-    private readonly IMediator _mediator;
-    private readonly IPublishEndpoint _publishEndpoint;
-
-    public ProcessPaymentCommandConsumer(IMediator mediator, IPublishEndpoint publishEndpoint)
-    {
-        _mediator = mediator;
-        _publishEndpoint = publishEndpoint;
-    }
-
     public async Task Consume(ConsumeContext<ProcessPaymentCommand> context)
     {
         var command = new AppCommand.ProcessPaymentCommand
@@ -28,28 +19,10 @@ public class ProcessPaymentCommandConsumer : IConsumer<ProcessPaymentCommand>
             CardExpiry = context.Message.CardExpiry
         };
 
-        var result = await _mediator.Send(command);
-
-        if (result.IsSuccess)
-        {
-            await _publishEndpoint.Publish(new PaymentCompletedEvent
-            {
-                CorrelationId = context.Message.CorrelationId,
-                OrderId = context.Message.OrderId,
-                PaymentId = result.Data!,
-                Amount = context.Message.Amount,
-                TransactionId = $"TXN-{result.Data}"
-            });
-        }
-        else
-        {
-            await _publishEndpoint.Publish(new PaymentFailedEvent
-            {
-                CorrelationId = context.Message.CorrelationId,
-                OrderId = context.Message.OrderId,
-                Reason = result.ErrorMessage ?? "Payment processing failed",
-                ErrorCode = result.ErrorCode ?? "UNKNOWN"
-            });
-        }
+        // The command handler will trigger domain events which will:
+        // 1. PaymentProcessingStartedDomainEvent -> calls payment gateway -> dispatches MarkPaymentAsPaid/MarkPaymentAsFailed command
+        // 2. PaymentPaidDomainEvent -> publishes PaymentCompletedEvent integration event
+        // 3. PaymentFailedDomainEvent -> publishes PaymentFailedEvent integration event
+        await mediator.Send(command);
     }
 }

@@ -7,7 +7,7 @@ namespace OpenMind.BuildingBlocks.IntegrationEvents.Fulfillment;
 /// <summary>
 /// Command to fulfill an order (async call - shipping).
 /// </summary>
-public record FulfillOrderCommand : IntegrationEvent
+public record FulfillOrderCommand : IntegrationCommand
 {
     public Guid OrderId { get; init; }
     public Guid CustomerId { get; init; }
@@ -18,7 +18,7 @@ public record FulfillOrderCommand : IntegrationEvent
 /// <summary>
 /// Command to cancel fulfillment.
 /// </summary>
-public record CancelFulfillmentCommand : IntegrationEvent
+public record CancelFulfillmentCommand : IntegrationCommand
 {
     public Guid OrderId { get; init; }
     public Guid FulfillmentId { get; init; }

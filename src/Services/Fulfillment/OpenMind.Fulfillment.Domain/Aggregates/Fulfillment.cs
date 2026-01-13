@@ -1,6 +1,7 @@
 using OpenMind.BuildingBlocks.Domain;
 using OpenMind.Fulfillment.Domain.Enums;
 using OpenMind.Fulfillment.Domain.Events;
+using OpenMind.Fulfillment.Domain.Rules;
 
 namespace OpenMind.Fulfillment.Domain.Aggregates;
 
@@ -34,8 +35,10 @@ public class Fulfillment : AggregateRoot<Guid>
 
     public static Fulfillment Create(Guid orderId, Guid customerId, string shippingAddress)
     {
+        CheckRule(new FulfillmentShippingAddressMustBeProvidedRule(shippingAddress));
+
         var fulfillment = new Fulfillment(Guid.NewGuid(), orderId, customerId, shippingAddress);
-        fulfillment.AddDomainEvent(new FulfillmentCreatedDomainEvent(fulfillment.Id, orderId));
+        fulfillment.Emit(new FulfillmentCreatedDomainEvent(fulfillment.Id, orderId));
         return fulfillment;
     }
 
@@ -46,34 +49,32 @@ public class Fulfillment : AggregateRoot<Guid>
 
     public void MarkAsProcessing()
     {
-        if (Status != FulfillmentStatus.Pending)
-            throw new InvalidOperationException($"Cannot process fulfillment in {Status} status");
+        CheckRule(new FulfillmentMustBeInStatusRule(Status, FulfillmentStatus.Pending, "process"));
 
         Status = FulfillmentStatus.Processing;
         SetUpdatedAt();
     }
 
-    public void MarkAsShipped(string trackingNumber)
+    public void MarkAsShipped(string trackingNumber, Guid correlationId)
     {
-        if (Status != FulfillmentStatus.Processing)
-            throw new InvalidOperationException($"Cannot ship fulfillment in {Status} status");
+        CheckRule(new FulfillmentMustBeInStatusRule(Status, FulfillmentStatus.Processing, "ship"));
+        CheckRule(new TrackingNumberMustBeProvidedRule(trackingNumber));
 
         Status = FulfillmentStatus.Shipped;
         TrackingNumber = trackingNumber;
         EstimatedDelivery = DateTime.UtcNow.AddDays(Random.Shared.Next(3, 7));
         SetUpdatedAt();
-        AddDomainEvent(new FulfillmentShippedDomainEvent(Id, OrderId, TrackingNumber));
+        Emit(new FulfillmentShippedDomainEvent(Id, OrderId, TrackingNumber, EstimatedDelivery.Value, correlationId));
     }
 
-    public void MarkAsBackOrdered(string reason)
+    public void MarkAsBackOrdered(string reason, Guid correlationId)
     {
-        if (Status != FulfillmentStatus.Processing)
-            throw new InvalidOperationException($"Cannot backorder fulfillment in {Status} status");
+        CheckRule(new FulfillmentMustBeInStatusRule(Status, FulfillmentStatus.Processing, "backorder"));
 
         Status = FulfillmentStatus.BackOrdered;
         FailureReason = reason;
         SetUpdatedAt();
-        AddDomainEvent(new FulfillmentBackOrderedDomainEvent(Id, OrderId, reason));
+        Emit(new FulfillmentBackOrderedDomainEvent(Id, OrderId, reason, correlationId));
     }
 
     public void MarkAsFailed(string reason)
@@ -83,15 +84,14 @@ public class Fulfillment : AggregateRoot<Guid>
         SetUpdatedAt();
     }
 
-    public void Cancel()
+    public void Cancel(Guid correlationId)
     {
         var allowedStatuses = new[] { FulfillmentStatus.Pending, FulfillmentStatus.Processing, FulfillmentStatus.BackOrdered };
-        if (!allowedStatuses.Contains(Status))
-            throw new InvalidOperationException($"Cannot cancel fulfillment in {Status} status");
+        CheckRule(new FulfillmentMustBeInOneOfStatusesRule(Status, allowedStatuses, "cancel"));
 
         Status = FulfillmentStatus.Cancelled;
         SetUpdatedAt();
-        AddDomainEvent(new FulfillmentCancelledDomainEvent(Id, OrderId));
+        Emit(new FulfillmentCancelledDomainEvent(Id, OrderId, correlationId));
     }
 }
 

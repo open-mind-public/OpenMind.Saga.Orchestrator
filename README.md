@@ -10,13 +10,20 @@ This solution implements an **Order Placement Orchestrator** that coordinates a 
 ┌─────────────────┐
 │   Client/UI     │
 └────────┬────────┘
-         │ "place order"
+         │ 1. "create order"
+         ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Order Service                             │
+│            (Stores order data in MongoDB)                    │
+└─────────────────────────────────────────────────────────────┘
+         │
+         │ 2. "place order" (with orderId)
          ▼
 ┌─────────────────────────────────────────────────────────────┐
 │              Order Placement Orchestrator                    │
 │           (MassTransit State Machine Saga)                  │
 │                                                              │
-│  States: Initial → OrderCreating → PaymentProcessing →      │
+│  States: Initial → Validating → PaymentProcessing →         │
 │          Fulfilling → SendingConfirmation → Completed       │
 │                                                              │
 │  Error States: PaymentFailed → SendingPaymentFailedEmail    │
@@ -29,8 +36,8 @@ This solution implements an **Order Placement Orchestrator** that coordinates a 
     ▼                  ▼                   ▼
 ┌───────────┐   ┌───────────┐   ┌──────────────┐   ┌──────────┐
 │  Order    │   │  Payment  │   │ Fulfillment  │   │  Email   │
-│ Placement │   │  Service  │   │   Service    │   │ Service  │
-│  Service  │   │           │   │              │   │          │
+│  Service  │   │  Service  │   │   Service    │   │ Service  │
+│           │   │           │   │              │   │          │
 └───────────┘   └───────────┘   └──────────────┘   └──────────┘
     │                │                 │                 │
     ▼                ▼                 ▼                 ▼
@@ -57,7 +64,7 @@ Each service follows Clean Architecture with:
 ### DDD Tactical Patterns
 - **Aggregate Roots**: Order, Payment, Fulfillment, EmailNotification
 - **Value Objects**: Money, Address, CustomerId, OrderId
-- **Domain Events**: OrderCreated, PaymentCompleted, etc.
+- **Domain Events**: OrderValidated, PaymentCompleted, etc.
 - **Strongly Typed IDs**: Type-safe identifiers
 - **Smart Enums**: OrderStatus, PaymentStatus, FulfillmentStatus
 
@@ -82,11 +89,11 @@ src/
 └── Services/
     ├── Orchestrator/
     │   └── OpenMind.Orchestrator.Api/           # Saga State Machine
-    ├── OrderPlacement/
-    │   ├── OpenMind.OrderPlacement.Domain/
-    │   ├── OpenMind.OrderPlacement.Application/
-    │   ├── OpenMind.OrderPlacement.Infrastructure/
-    │   └── OpenMind.OrderPlacement.Api/
+    ├── Order/
+    │   ├── OpenMind.Order.Domain/
+    │   ├── OpenMind.Order.Application/
+    │   ├── OpenMind.Order.Infrastructure/
+    │   └── OpenMind.Order.Api/
     ├── Payment/
     │   └── ... (same structure)
     ├── Fulfillment/
@@ -98,27 +105,30 @@ src/
 ## 🔄 Workflow Scenarios
 
 ### Happy Path
-1. **Place Order** → Order is created in Order Placement Service
-2. **Process Payment** → Payment is processed (synchronous)
-3. **Fulfill Order** → Items are shipped (asynchronous)
-4. **Send Confirmation** → Email notification sent (asynchronous)
-5. **Complete** → Saga finishes successfully
+1. **Create Order** → Order is created in Order Service (stored in MongoDB)
+2. **Place Order** → Saga validates order exists via Order Service
+3. **Process Payment** → Payment is processed (synchronous)
+4. **Fulfill Order** → Items are shipped (asynchronous)
+5. **Send Confirmation** → Email notification sent (asynchronous)
+6. **Complete** → Saga finishes successfully
 
 ### Payment Failure Path
-1. **Place Order** → Order created
-2. **Process Payment** → Payment declined (expired card, etc.)
-3. **Update Order** → Mark as PaymentFailed
-4. **Send Notification** → Email customer about payment failure
-5. **Cancel** → Saga ends with cancelled state
+1. **Create Order** → Order created in Order Service
+2. **Place Order** → Order validated
+3. **Process Payment** → Payment declined (expired card, etc.)
+4. **Update Order** → Mark as PaymentFailed
+5. **Send Notification** → Email customer about payment failure
+6. **Cancel** → Saga ends with cancelled state
 
 ### Out of Stock Path
-1. **Place Order** → Order created
-2. **Process Payment** → Payment successful
-3. **Fulfill Order** → Items out of stock
-4. **Update Order** → Mark as BackOrdered
-5. **Refund Payment** → Compensating transaction
-6. **Send Notification** → Email customer about backorder & refund
-7. **Cancel** → Saga ends with cancelled state
+1. **Create Order** → Order created in Order Service
+2. **Place Order** → Order validated
+3. **Process Payment** → Payment successful
+4. **Fulfill Order** → Items out of stock
+5. **Update Order** → Mark as BackOrdered
+6. **Refund Payment** → Compensating transaction
+7. **Send Notification** → Email customer about backorder & refund
+8. **Cancel** → Saga ends with cancelled state
 
 ## 🚀 Getting Started
 
@@ -145,8 +155,8 @@ dotnet build
 cd src/Services/Orchestrator/OpenMind.Orchestrator.Api
 dotnet run
 
-# Terminal 2 - Order Placement
-cd src/Services/OrderPlacement/OpenMind.OrderPlacement.Api
+# Terminal 2 - Order
+cd src/Services/Order/OpenMind.Order.Api
 dotnet run --urls=http://localhost:5001
 
 # Terminal 3 - Payment
@@ -169,15 +179,13 @@ docker-compose up --build
 
 ## 📡 API Endpoints
 
-### Place Order (Orchestrator - Port 5000)
+### Step 1: Create Order (Order Service - Port 5001)
 ```bash
-POST http://localhost:5000/api/orders/place
+POST http://localhost:5001/api/orders
 Content-Type: application/json
 
 {
   "customerId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "customerName": "John Doe",
-  "customerEmail": "john.doe@example.com",
   "items": [
     {
       "productId": "3fa85f64-5717-4562-b3fc-2c963f66afa7",
@@ -196,6 +204,11 @@ Content-Type: application/json
 }
 ```
 
+### Step 2: Place Order / Start Saga (Orchestrator - Port 5000)
+```bash
+POST http://localhost:5000/api/orders/{orderId}/place
+```
+
 ### Get Order Status
 ```bash
 GET http://localhost:5000/api/orders/{orderId}/status
@@ -209,7 +222,7 @@ GET http://localhost:5000/api/orders?page=1&pageSize=10
 ### Health Checks
 ```bash
 GET http://localhost:5000/health   # Orchestrator
-GET http://localhost:5001/health   # Order Placement
+GET http://localhost:5001/health   # Order
 GET http://localhost:5002/health   # Payment
 GET http://localhost:5003/health   # Fulfillment
 GET http://localhost:5004/health   # Email
@@ -241,7 +254,7 @@ Each service has its own database:
 | Service | Port |
 |---------|------|
 | Orchestrator | 5000 |
-| Order Placement | 5001 |
+| Order | 5001 |
 | Payment | 5002 |
 | Fulfillment | 5003 |
 | Email | 5004 |
@@ -251,7 +264,7 @@ Each service has its own database:
 
 ### Saga State Machine States
 - `Initial` - Starting state
-- `OrderCreating` - Creating order record
+- `Validating` - Validating order exists
 - `PaymentProcessing` - Processing payment
 - `Fulfilling` - Shipping order (async)
 - `SendingConfirmation` - Sending success email (async)
@@ -264,14 +277,14 @@ Each service has its own database:
 
 ### Integration Events
 Commands (from Orchestrator):
-- `CreateOrderCommand`
+- `ValidateOrderCommand`
 - `ProcessPaymentCommand`
 - `FulfillOrderCommand`
 - `SendOrderConfirmationEmailCommand`
 - `RefundPaymentCommand`
 
 Events (to Orchestrator):
-- `OrderCreatedEvent`
+- `OrderValidatedEvent`
 - `PaymentCompletedEvent` / `PaymentFailedEvent`
 - `OrderShippedEvent` / `FulfillmentFailedEvent`
 - `EmailSentEvent`

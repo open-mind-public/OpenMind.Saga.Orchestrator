@@ -6,17 +6,9 @@ using OpenMind.Email.Domain.Enums;
 
 namespace OpenMind.Email.Infrastructure.Consumers;
 
-public class SendBackorderEmailConsumer : IConsumer<SendBackorderEmailCommand>
+public class SendBackorderEmailConsumer(IMediator mediator)
+    : IConsumer<SendBackorderEmailCommand>
 {
-    private readonly IMediator _mediator;
-    private readonly IPublishEndpoint _publishEndpoint;
-
-    public SendBackorderEmailConsumer(IMediator mediator, IPublishEndpoint publishEndpoint)
-    {
-        _mediator = mediator;
-        _publishEndpoint = publishEndpoint;
-    }
-
     public async Task Consume(ConsumeContext<SendBackorderEmailCommand> context)
     {
         var command = new SendEmailCommand
@@ -26,6 +18,7 @@ public class SendBackorderEmailConsumer : IConsumer<SendBackorderEmailCommand>
             CustomerEmail = context.Message.CustomerEmail,
             CustomerName = context.Message.CustomerName,
             EmailType = EmailType.BackorderNotification.Name,
+            CorrelationId = context.Message.CorrelationId,
             TemplateData = new Dictionary<string, string>
             {
                 ["OrderId"] = context.Message.OrderId.ToString(),
@@ -34,17 +27,6 @@ public class SendBackorderEmailConsumer : IConsumer<SendBackorderEmailCommand>
             }
         };
 
-        var result = await _mediator.Send(command);
-
-        if (result.IsSuccess)
-        {
-            await _publishEndpoint.Publish(new EmailSentEvent
-            {
-                CorrelationId = context.Message.CorrelationId,
-                OrderId = context.Message.OrderId,
-                EmailType = EmailType.BackorderNotification.Name,
-                RecipientEmail = context.Message.CustomerEmail
-            });
-        }
+        await mediator.Send(command);
     }
 }

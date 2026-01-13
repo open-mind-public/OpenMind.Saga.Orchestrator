@@ -6,7 +6,8 @@ namespace OpenMind.Payment.Infrastructure.Repositories;
 
 public class PaymentRepository : MongoRepository<Domain.Aggregates.Payment, Guid>, IPaymentRepository
 {
-    public PaymentRepository(IMongoDatabase database) : base(database, "payments")
+    public PaymentRepository(MongoDbContext dbContext) 
+        : base(dbContext, "payments")
     {
     }
 

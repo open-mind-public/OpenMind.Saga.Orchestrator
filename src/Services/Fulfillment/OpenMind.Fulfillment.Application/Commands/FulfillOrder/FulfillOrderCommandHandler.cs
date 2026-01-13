@@ -3,15 +3,9 @@ using OpenMind.Fulfillment.Domain.Repositories;
 
 namespace OpenMind.Fulfillment.Application.Commands.FulfillOrder;
 
-public class FulfillOrderCommandHandler : ICommandHandler<FulfillOrderCommand, FulfillOrderResult>
+public class FulfillOrderCommandHandler(IFulfillmentRepository fulfillmentRepository)
+    : ICommandHandler<FulfillOrderCommand, FulfillOrderResult>
 {
-    private readonly IFulfillmentRepository _fulfillmentRepository;
-
-    public FulfillOrderCommandHandler(IFulfillmentRepository fulfillmentRepository)
-    {
-        _fulfillmentRepository = fulfillmentRepository;
-    }
-
     public async Task<CommandResult<FulfillOrderResult>> Handle(FulfillOrderCommand request, CancellationToken cancellationToken)
     {
         try
@@ -34,9 +28,9 @@ public class FulfillOrderCommandHandler : ICommandHandler<FulfillOrderCommand, F
             if (inventoryAvailable)
             {
                 var trackingNumber = $"TRK-{Guid.NewGuid():N}".ToUpper()[..15];
-                fulfillment.MarkAsShipped(trackingNumber);
+                fulfillment.MarkAsShipped(trackingNumber, request.CorrelationId);
 
-                await _fulfillmentRepository.AddAsync(fulfillment, cancellationToken);
+                await fulfillmentRepository.AddAsync(fulfillment, cancellationToken);
 
                 return CommandResult<FulfillOrderResult>.Success(new FulfillOrderResult
                 {
@@ -55,9 +49,9 @@ public class FulfillOrderCommandHandler : ICommandHandler<FulfillOrderCommand, F
                 if (backOrderedItems.Count == 0)
                     backOrderedItems.Add(request.Items.First().ProductName);
 
-                fulfillment.MarkAsBackOrdered($"Items out of stock: {string.Join(", ", backOrderedItems)}");
+                fulfillment.MarkAsBackOrdered($"Items out of stock: {string.Join(", ", backOrderedItems)}", request.CorrelationId);
 
-                await _fulfillmentRepository.AddAsync(fulfillment, cancellationToken);
+                await fulfillmentRepository.AddAsync(fulfillment, cancellationToken);
 
                 return CommandResult<FulfillOrderResult>.Failure(
                     "Some items are out of stock",

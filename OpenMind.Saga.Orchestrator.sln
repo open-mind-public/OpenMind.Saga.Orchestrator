@@ -11,7 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BuildingBlocks", "BuildingB
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{A0000000-0000-0000-0000-000000000003}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OrderPlacement", "OrderPlacement", "{A0000000-0000-0000-0000-000000000004}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Order", "Order", "{A0000000-0000-0000-0000-000000000004}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Payment", "Payment", "{A0000000-0000-0000-0000-000000000005}"
 EndProject
@@ -32,14 +32,14 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.BuildingBlocks.IntegrationEvents", "src/BuildingBlocks/OpenMind.BuildingBlocks.IntegrationEvents/OpenMind.BuildingBlocks.IntegrationEvents.csproj", "{B1000001-0000-0000-0000-000000000004}"
 EndProject
 
-# OrderPlacement Service Projects
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.OrderPlacement.Domain", "src/Services/OrderPlacement/OpenMind.OrderPlacement.Domain/OpenMind.OrderPlacement.Domain.csproj", "{C1000001-0000-0000-0000-000000000001}"
+# Order Service Projects
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Order.Domain", "src/Services/Order/OpenMind.Order.Domain/OpenMind.Order.Domain.csproj", "{C1000001-0000-0000-0000-000000000001}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.OrderPlacement.Application", "src/Services/OrderPlacement/OpenMind.OrderPlacement.Application/OpenMind.OrderPlacement.Application.csproj", "{C1000001-0000-0000-0000-000000000002}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Order.Application", "src/Services/Order/OpenMind.Order.Application/OpenMind.Order.Application.csproj", "{C1000001-0000-0000-0000-000000000002}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.OrderPlacement.Infrastructure", "src/Services/OrderPlacement/OpenMind.OrderPlacement.Infrastructure/OpenMind.OrderPlacement.Infrastructure.csproj", "{C1000001-0000-0000-0000-000000000003}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Order.Infrastructure", "src/Services/Order/OpenMind.Order.Infrastructure/OpenMind.Order.Infrastructure.csproj", "{C1000001-0000-0000-0000-000000000003}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.OrderPlacement.Api", "src/Services/OrderPlacement/OpenMind.OrderPlacement.Api/OpenMind.OrderPlacement.Api.csproj", "{C1000001-0000-0000-0000-000000000004}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Order.Api", "src/Services/Order/OpenMind.Order.Api/OpenMind.Order.Api.csproj", "{C1000001-0000-0000-0000-000000000004}"
 EndProject
 
 # Payment Service Projects

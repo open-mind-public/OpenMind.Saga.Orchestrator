@@ -35,18 +35,18 @@ services:
     networks:
       - openmind-network
 
-  # Order Placement Service
-  order-placement:
+  # Order Service
+  order:
     build:
       context: .
-      dockerfile: src/Services/OrderPlacement/OpenMind.OrderPlacement.Api/Dockerfile
-    container_name: openmind-order-placement
+      dockerfile: src/Services/Order/OpenMind.Order.Api/Dockerfile
+    container_name: openmind-order
     ports:
       - "5001:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - MongoDB__ConnectionString=mongodb://mongodb:27017
-      - MongoDB__DatabaseName=OrderPlacementDb
+      - MongoDB__DatabaseName=OrderDb
     depends_on:
       mongodb:
         condition: service_healthy

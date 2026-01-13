@@ -57,37 +57,20 @@ if (app.Environment.IsDevelopment())
 }
 
 // API Endpoints
-app.MapPost("/api/orders/place", async (PlaceOrderRequest request, IPublishEndpoint publishEndpoint) =>
+app.MapPost("/api/orders/{orderId:guid}/place", async (Guid orderId, IPublishEndpoint publishEndpoint) =>
 {
-    var orderId = Guid.NewGuid();
-
-    // Calculate total amount
-    var totalAmount = request.Items.Sum(i => i.UnitPrice * i.Quantity);
-
     // Publish command to start the saga
+    // The order must already exist in the Order Service
     await publishEndpoint.Publish(new PlaceOrderCommand
     {
-        OrderId = orderId,
-        CustomerId = request.CustomerId,
-        Items = request.Items.Select(i => new OpenMind.BuildingBlocks.IntegrationEvents.Orders.OrderItemDto
-        {
-            ProductId = i.ProductId,
-            ProductName = i.ProductName,
-            Quantity = i.Quantity,
-            UnitPrice = i.UnitPrice
-        }).ToList(),
-        TotalAmount = totalAmount,
-        ShippingAddress = $"{request.ShippingAddress.Street}, {request.ShippingAddress.City}, " +
-                         $"{request.ShippingAddress.State} {request.ShippingAddress.ZipCode}, {request.ShippingAddress.Country}",
-        CustomerEmail = request.CustomerEmail,
-        CustomerName = request.CustomerName
+        OrderId = orderId
     });
 
     return Results.Accepted($"/api/orders/{orderId}/status", new
     {
         OrderId = orderId,
         Message = "Order placement initiated",
-        Status = "Processing"
+        Status = "Validating"
     });
 })
 .WithName("PlaceOrder")
@@ -155,24 +138,3 @@ app.MapGet("/health", () => Results.Ok(new { Status = "Healthy", Service = "Orch
 
 Log.Information("Order Placement Orchestrator starting...");
 app.Run();
-
-// Request DTOs
-public record PlaceOrderRequest(
-    Guid CustomerId,
-    string CustomerName,
-    string CustomerEmail,
-    List<OrderItemRequest> Items,
-    AddressRequest ShippingAddress);
-
-public record OrderItemRequest(
-    Guid ProductId,
-    string ProductName,
-    int Quantity,
-    decimal UnitPrice);
-
-public record AddressRequest(
-    string Street,
-    string City,
-    string State,
-    string ZipCode,
-    string Country);

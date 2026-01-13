@@ -5,31 +5,54 @@ namespace OpenMind.BuildingBlocks.IntegrationEvents.Orders;
 // ========================================
 
 /// <summary>
-/// Command to create a new order.
+/// Command to validate an existing order for placement.
+/// The order is assumed to already exist in the Order Service.
 /// </summary>
-public record CreateOrderCommand : IntegrationEvent
+public record ValidateOrderCommand : IntegrationCommand
 {
     public Guid OrderId { get; init; }
-    public Guid CustomerId { get; init; }
-    public List<OrderItemDto> Items { get; init; } = [];
-    public decimal TotalAmount { get; init; }
-    public string ShippingAddress { get; init; } = string.Empty;
 }
 
 /// <summary>
-/// Command to update order status.
+/// Command to mark order payment as completed.
 /// </summary>
-public record UpdateOrderStatusCommand : IntegrationEvent
+public record MarkOrderAsPaymentCompletedCommand : IntegrationCommand
 {
     public Guid OrderId { get; init; }
-    public string Status { get; init; } = string.Empty;
-    public string? Reason { get; init; }
+    public string TransactionId { get; init; } = string.Empty;
+}
+
+/// <summary>
+/// Command to mark order payment as failed.
+/// </summary>
+public record MarkOrderAsPaymentFailedCommand : IntegrationCommand
+{
+    public Guid OrderId { get; init; }
+    public string Reason { get; init; } = string.Empty;
+}
+
+/// <summary>
+/// Command to mark order as shipped.
+/// </summary>
+public record MarkOrderAsShippedCommand : IntegrationCommand
+{
+    public Guid OrderId { get; init; }
+    public string TrackingNumber { get; init; } = string.Empty;
+}
+
+/// <summary>
+/// Command to mark order as back ordered.
+/// </summary>
+public record MarkOrderAsBackOrderedCommand : IntegrationCommand
+{
+    public Guid OrderId { get; init; }
+    public string Reason { get; init; } = string.Empty;
 }
 
 /// <summary>
 /// Command to cancel an order.
 /// </summary>
-public record CancelOrderCommand : IntegrationEvent
+public record CancelOrderCommand : IntegrationCommand
 {
     public Guid OrderId { get; init; }
     public string Reason { get; init; } = string.Empty;
@@ -40,31 +63,63 @@ public record CancelOrderCommand : IntegrationEvent
 // ========================================
 
 /// <summary>
-/// Event indicating order was successfully created.
+/// Event indicating order was validated and ready for placement.
+/// Contains order details retrieved from the Order Service.
 /// </summary>
-public record OrderCreatedEvent : IntegrationEvent
+public record OrderValidatedEvent : IntegrationEvent
 {
     public Guid OrderId { get; init; }
     public Guid CustomerId { get; init; }
     public decimal TotalAmount { get; init; }
+    public string ShippingAddress { get; init; } = string.Empty;
+    public string CustomerEmail { get; init; } = string.Empty;
+    public string CustomerName { get; init; } = string.Empty;
+    public List<OrderItemDto> Items { get; init; } = [];
 }
 
 /// <summary>
-/// Event indicating order creation failed.
+/// Event indicating order validation failed.
 /// </summary>
-public record OrderCreationFailedEvent : IntegrationEvent
+public record OrderValidationFailedEvent : IntegrationEvent
 {
     public Guid OrderId { get; init; }
     public string Reason { get; init; } = string.Empty;
 }
 
 /// <summary>
-/// Event indicating order status was updated.
+/// Event indicating order payment was marked as completed.
 /// </summary>
-public record OrderStatusUpdatedEvent : IntegrationEvent
+public record OrderPaymentCompletedEvent : IntegrationEvent
 {
     public Guid OrderId { get; init; }
-    public string Status { get; init; } = string.Empty;
+    public string TransactionId { get; init; } = string.Empty;
+}
+
+/// <summary>
+/// Event indicating order payment was marked as failed.
+/// </summary>
+public record OrderPaymentFailedEvent : IntegrationEvent
+{
+    public Guid OrderId { get; init; }
+    public string Reason { get; init; } = string.Empty;
+}
+
+/// <summary>
+/// Event indicating order status was marked as shipped.
+/// </summary>
+public record OrderMarkedAsShippedEvent : IntegrationEvent
+{
+    public Guid OrderId { get; init; }
+    public string TrackingNumber { get; init; } = string.Empty;
+}
+
+/// <summary>
+/// Event indicating order was marked as back ordered.
+/// </summary>
+public record OrderBackOrderedEvent : IntegrationEvent
+{
+    public Guid OrderId { get; init; }
+    public string Reason { get; init; } = string.Empty;
 }
 
 /// <summary>

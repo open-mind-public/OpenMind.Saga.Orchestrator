@@ -8,4 +8,5 @@ public record RefundPaymentCommand : ICommand
     public Guid PaymentId { get; init; }
     public decimal Amount { get; init; }
     public string Reason { get; init; } = string.Empty;
+    public Guid CorrelationId { get; init; }
 }

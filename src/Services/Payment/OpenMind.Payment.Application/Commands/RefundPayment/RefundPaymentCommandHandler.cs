@@ -3,21 +3,15 @@ using OpenMind.Payment.Domain.Repositories;
 
 namespace OpenMind.Payment.Application.Commands.RefundPayment;
 
-public class RefundPaymentCommandHandler : ICommandHandler<RefundPaymentCommand>
+public class RefundPaymentCommandHandler(IPaymentRepository paymentRepository)
+    : ICommandHandler<RefundPaymentCommand>
 {
-    private readonly IPaymentRepository _paymentRepository;
-
-    public RefundPaymentCommandHandler(IPaymentRepository paymentRepository)
-    {
-        _paymentRepository = paymentRepository;
-    }
-
     public async Task<CommandResult> Handle(RefundPaymentCommand request, CancellationToken cancellationToken)
     {
         try
         {
-            var payment = await _paymentRepository.GetByIdAsync(request.PaymentId, cancellationToken)
-                ?? await _paymentRepository.GetByOrderIdAsync(request.OrderId, cancellationToken);
+            var payment = await paymentRepository.GetByIdAsync(request.PaymentId, cancellationToken)
+                ?? await paymentRepository.GetByOrderIdAsync(request.OrderId, cancellationToken);
 
             if (payment is null)
                 return CommandResult.Failure($"Payment not found for order {request.OrderId}", "PAYMENT_NOT_FOUND");
@@ -27,14 +21,14 @@ public class RefundPaymentCommandHandler : ICommandHandler<RefundPaymentCommand>
 
             if (refundSuccess)
             {
-                payment.MarkAsRefunded();
-                await _paymentRepository.UpdateAsync(payment, cancellationToken);
+                payment.MarkAsRefunded(request.CorrelationId);
+                await paymentRepository.UpdateAsync(payment, cancellationToken);
                 return CommandResult.Success();
             }
             else
             {
-                payment.MarkAsRefundFailed("Refund processing error");
-                await _paymentRepository.UpdateAsync(payment, cancellationToken);
+                payment.MarkAsRefundFailed("Refund processing error", request.CorrelationId);
+                await paymentRepository.UpdateAsync(payment, cancellationToken);
                 return CommandResult.Failure("Refund failed", "REFUND_ERROR");
             }
         }

@@ -21,7 +21,18 @@ public abstract class Entity<TId> : IEquatable<Entity<TId>>
         Id = id;
     }
 
-    public void AddDomainEvent(IDomainEvent domainEvent)
+    /// <summary>
+    /// Checks a business rule and throws if it's broken.
+    /// </summary>
+    protected static void CheckRule(IBusinessRule rule)
+    {
+        if (rule.IsBroken())
+        {
+            throw new BusinessRuleValidationException(rule);
+        }
+    }
+
+    public void Emit(IDomainEvent domainEvent)
     {
         _domainEvents.Add(domainEvent);
     }

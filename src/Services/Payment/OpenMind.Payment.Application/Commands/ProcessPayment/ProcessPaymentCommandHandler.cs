@@ -3,15 +3,9 @@ using OpenMind.Payment.Domain.Repositories;
 
 namespace OpenMind.Payment.Application.Commands.ProcessPayment;
 
-public class ProcessPaymentCommandHandler : ICommandHandler<ProcessPaymentCommand, Guid>
+public class ProcessPaymentCommandHandler(IPaymentRepository paymentRepository)
+    : ICommandHandler<ProcessPaymentCommand, Guid>
 {
-    private readonly IPaymentRepository _paymentRepository;
-
-    public ProcessPaymentCommandHandler(IPaymentRepository paymentRepository)
-    {
-        _paymentRepository = paymentRepository;
-    }
-
     public async Task<CommandResult<Guid>> Handle(ProcessPaymentCommand request, CancellationToken cancellationToken)
     {
         try
@@ -24,56 +18,17 @@ public class ProcessPaymentCommandHandler : ICommandHandler<ProcessPaymentComman
                 request.PaymentMethod,
                 request.CardNumber);
 
-            payment.MarkAsProcessing();
+            // Mark as processing - this publishes PaymentProcessingStartedDomainEvent
+            // The domain event handler will call the payment gateway
+            payment.MarkAsProcessing(request.CardNumber, request.CardExpiry);
 
-            // Simulate payment processing with card validation
-            var isValidCard = SimulatePaymentGateway(request.CardNumber, request.CardExpiry);
+            await paymentRepository.AddAsync(payment, cancellationToken);
 
-            if (isValidCard)
-            {
-                var transactionId = $"TXN-{Guid.NewGuid():N}".ToUpper()[..20];
-                payment.MarkAsCompleted(transactionId);
-            }
-            else
-            {
-                payment.MarkAsFailed("Payment declined: Invalid or expired card");
-            }
-
-            await _paymentRepository.AddAsync(payment, cancellationToken);
-
-            if (payment.Status == Domain.Enums.PaymentStatus.Completed)
-            {
-                return CommandResult<Guid>.Success(payment.Id);
-            }
-
-            return CommandResult<Guid>.Failure(payment.FailureReason ?? "Payment failed", "PAYMENT_DECLINED");
+            return CommandResult<Guid>.Success(payment.Id);
         }
         catch (Exception ex)
         {
             return CommandResult<Guid>.Failure(ex.Message, "PAYMENT_ERROR");
         }
-    }
-
-    private static bool SimulatePaymentGateway(string cardNumber, string expiry)
-    {
-        // Simulate card validation
-        // Cards ending in 0000 are declined (for testing)
-        if (cardNumber.EndsWith("0000"))
-            return false;
-
-        // Check expiry (simplified check)
-        if (!string.IsNullOrEmpty(expiry))
-        {
-            var parts = expiry.Split('/');
-            if (parts.Length == 2 && int.TryParse(parts[1], out var year))
-            {
-                var currentYear = DateTime.UtcNow.Year % 100;
-                if (year < currentYear)
-                    return false;
-            }
-        }
-
-        // Simulate 90% success rate
-        return Random.Shared.Next(100) < 90;
     }
 }

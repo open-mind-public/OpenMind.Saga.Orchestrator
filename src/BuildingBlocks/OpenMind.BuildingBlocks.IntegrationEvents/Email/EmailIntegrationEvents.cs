@@ -7,7 +7,7 @@ namespace OpenMind.BuildingBlocks.IntegrationEvents.Email;
 /// <summary>
 /// Command to send order confirmation email.
 /// </summary>
-public record SendOrderConfirmationEmailCommand : IntegrationEvent
+public record SendOrderConfirmationEmailCommand : IntegrationCommand
 {
     public Guid OrderId { get; init; }
     public Guid CustomerId { get; init; }
@@ -20,7 +20,7 @@ public record SendOrderConfirmationEmailCommand : IntegrationEvent
 /// <summary>
 /// Command to send payment failure notification email.
 /// </summary>
-public record SendPaymentFailedEmailCommand : IntegrationEvent
+public record SendPaymentFailedEmailCommand : IntegrationCommand
 {
     public Guid OrderId { get; init; }
     public Guid CustomerId { get; init; }
@@ -32,7 +32,7 @@ public record SendPaymentFailedEmailCommand : IntegrationEvent
 /// <summary>
 /// Command to send order cancellation email.
 /// </summary>
-public record SendOrderCancelledEmailCommand : IntegrationEvent
+public record SendOrderCancelledEmailCommand : IntegrationCommand
 {
     public Guid OrderId { get; init; }
     public Guid CustomerId { get; init; }
@@ -44,7 +44,7 @@ public record SendOrderCancelledEmailCommand : IntegrationEvent
 /// <summary>
 /// Command to send backorder notification email.
 /// </summary>
-public record SendBackorderEmailCommand : IntegrationEvent
+public record SendBackorderEmailCommand : IntegrationCommand
 {
     public Guid OrderId { get; init; }
     public Guid CustomerId { get; init; }
@@ -57,7 +57,7 @@ public record SendBackorderEmailCommand : IntegrationEvent
 /// <summary>
 /// Command to send refund confirmation email.
 /// </summary>
-public record SendRefundEmailCommand : IntegrationEvent
+public record SendRefundEmailCommand : IntegrationCommand
 {
     public Guid OrderId { get; init; }
     public Guid CustomerId { get; init; }

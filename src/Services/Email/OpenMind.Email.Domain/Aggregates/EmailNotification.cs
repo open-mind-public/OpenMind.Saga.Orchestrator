@@ -1,5 +1,7 @@
 using OpenMind.BuildingBlocks.Domain;
 using OpenMind.Email.Domain.Enums;
+using OpenMind.Email.Domain.Events;
+using OpenMind.Email.Domain.Rules;
 
 namespace OpenMind.Email.Domain.Aggregates;
 
@@ -55,6 +57,10 @@ public class EmailNotification : AggregateRoot<Guid>
         string subject,
         string body)
     {
+        CheckRule(new EmailRecipientMustBeValidRule(recipientEmail));
+        CheckRule(new EmailSubjectMustBeProvidedRule(subject));
+        CheckRule(new EmailBodyMustBeProvidedRule(body));
+
         return new EmailNotification(
             Guid.NewGuid(),
             orderId,
@@ -66,17 +72,19 @@ public class EmailNotification : AggregateRoot<Guid>
             body);
     }
 
-    public void MarkAsSent()
+    public void MarkAsSent(Guid correlationId)
     {
         Status = EmailStatus.Sent;
         SentAt = DateTime.UtcNow;
         SetUpdatedAt();
+        Emit(new EmailSentDomainEvent(Id, OrderId, Type.Name, RecipientEmail, correlationId));
     }
 
-    public void MarkAsFailed(string reason)
+    public void MarkAsFailed(string reason, Guid correlationId)
     {
         Status = EmailStatus.Failed;
         FailureReason = reason;
         SetUpdatedAt();
+        Emit(new EmailFailedDomainEvent(Id, OrderId, Type.Name, reason, correlationId));
     }
 }

@@ -7,7 +7,7 @@ namespace OpenMind.BuildingBlocks.IntegrationEvents.Payments;
 /// <summary>
 /// Command to process payment for an order.
 /// </summary>
-public record ProcessPaymentCommand : IntegrationEvent
+public record ProcessPaymentCommand : IntegrationCommand
 {
     public Guid OrderId { get; init; }
     public Guid CustomerId { get; init; }
@@ -20,7 +20,7 @@ public record ProcessPaymentCommand : IntegrationEvent
 /// <summary>
 /// Command to refund payment.
 /// </summary>
-public record RefundPaymentCommand : IntegrationEvent
+public record RefundPaymentCommand : IntegrationCommand
 {
     public Guid OrderId { get; init; }
     public Guid PaymentId { get; init; }

@@ -7,16 +7,10 @@ namespace OpenMind.BuildingBlocks.Application.Behaviors;
 /// <summary>
 /// Pipeline behavior for logging request handling.
 /// </summary>
-public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+public class LoggingBehavior<TRequest, TResponse>(ILogger<LoggingBehavior<TRequest, TResponse>> logger)
+    : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
 {
-    private readonly ILogger<LoggingBehavior<TRequest, TResponse>> _logger;
-
-    public LoggingBehavior(ILogger<LoggingBehavior<TRequest, TResponse>> logger)
-    {
-        _logger = logger;
-    }
-
     public async Task<TResponse> Handle(
         TRequest request,
         RequestHandlerDelegate<TResponse> next,
@@ -25,7 +19,7 @@ public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
         var requestName = typeof(TRequest).Name;
         var requestGuid = Guid.NewGuid().ToString();
 
-        _logger.LogInformation(
+        logger.LogInformation(
             "[START] {RequestName} [{RequestGuid}] - {@Request}",
             requestName, requestGuid, request);
 
@@ -37,7 +31,7 @@ public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
 
             stopwatch.Stop();
 
-            _logger.LogInformation(
+            logger.LogInformation(
                 "[END] {RequestName} [{RequestGuid}] - Completed in {ElapsedMilliseconds}ms",
                 requestName, requestGuid, stopwatch.ElapsedMilliseconds);
 
@@ -47,7 +41,7 @@ public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
         {
             stopwatch.Stop();
 
-            _logger.LogError(ex,
+            logger.LogError(ex,
                 "[ERROR] {RequestName} [{RequestGuid}] - Failed in {ElapsedMilliseconds}ms",
                 requestName, requestGuid, stopwatch.ElapsedMilliseconds);
 

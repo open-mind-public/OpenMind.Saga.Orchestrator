@@ -11,21 +11,24 @@ namespace OpenMind.Orchestrator.Api.StateMachine;
 /// Order Placement Saga State Machine using MassTransit Automatonymous.
 /// Implements the orchestrator pattern for coordinating the order placement workflow.
 /// 
+/// ASSUMPTION: Orders are created beforehand. The saga triggers the placement process.
+/// 
 /// Happy Path:
-/// 1. Pending → OrderCreating (Create order in Order Placement Service)
-/// 2. OrderCreating → PaymentProcessing (Process payment in Payment Service)
+/// 1. Pending → Validating (Validate order exists in Order Service)
+/// 2. Validating → PaymentProcessing (Process payment in Payment Service)
 /// 3. PaymentProcessing → Fulfilling (Fulfill order in Fulfillment Service - async)
 /// 4. Fulfilling → SendingConfirmation (Send confirmation email - async)
 /// 5. SendingConfirmation → Completed
 /// 
 /// Error Paths:
+/// - Validation Failed: Validating → Failed
 /// - Payment Failed: PaymentProcessing → SendingPaymentFailedEmail → Cancelled
 /// - Out of Stock: Fulfilling → RefundingPayment → SendingBackorderEmail → Cancelled
 /// </summary>
 public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
 {
     // States
-    public State OrderCreating { get; private set; } = null!;
+    public State Validating { get; private set; } = null!;
     public State PaymentProcessing { get; private set; } = null!;
     public State Fulfilling { get; private set; } = null!;
     public State SendingConfirmation { get; private set; } = null!;
@@ -41,8 +44,8 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
     public Event<PlaceOrderCommand> PlaceOrder { get; private set; } = null!;
 
     // Events - Responses from Order Service
-    public Event<OrderCreatedEvent> OrderCreated { get; private set; } = null!;
-    public Event<OrderCreationFailedEvent> OrderCreationFailed { get; private set; } = null!;
+    public Event<OrderValidatedEvent> OrderValidated { get; private set; } = null!;
+    public Event<OrderValidationFailedEvent> OrderValidationFailed { get; private set; } = null!;
 
     // Events - Responses from Payment Service
     public Event<PaymentCompletedEvent> PaymentCompleted { get; private set; } = null!;
@@ -64,8 +67,8 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
         // Configure event correlation
         Event(() => PlaceOrder, e => e.CorrelateById(context => context.Message.OrderId));
 
-        Event(() => OrderCreated, e => e.CorrelateById(context => context.Message.CorrelationId));
-        Event(() => OrderCreationFailed, e => e.CorrelateById(context => context.Message.CorrelationId));
+        Event(() => OrderValidated, e => e.CorrelateById(context => context.Message.CorrelationId));
+        Event(() => OrderValidationFailed, e => e.CorrelateById(context => context.Message.CorrelationId));
 
         Event(() => PaymentCompleted, e => e.CorrelateById(context => context.Message.CorrelationId));
         Event(() => PaymentFailed, e => e.CorrelateById(context => context.Message.CorrelationId));
@@ -83,30 +86,31 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
                 .Then(context =>
                 {
                     context.Saga.OrderId = context.Message.OrderId;
+                    context.Saga.CreatedAt = DateTime.UtcNow;
+                    context.Saga.UpdatedAt = DateTime.UtcNow;
+                })
+                // Validate the order exists and retrieve its details
+                .PublishAsync(context => context.Init<ValidateOrderCommand>(new
+                {
+                    CorrelationId = context.Saga.CorrelationId,
+                    OrderId = context.Saga.OrderId
+                }))
+                .TransitionTo(Validating));
+
+        // Step 1: Order Validation
+        During(Validating,
+            When(OrderValidated)
+                .Then(context =>
+                {
+                    // Store order details from the validation response
                     context.Saga.CustomerId = context.Message.CustomerId;
                     context.Saga.TotalAmount = context.Message.TotalAmount;
                     context.Saga.ShippingAddress = context.Message.ShippingAddress;
                     context.Saga.CustomerEmail = context.Message.CustomerEmail;
                     context.Saga.CustomerName = context.Message.CustomerName;
                     context.Saga.OrderItemsJson = JsonSerializer.Serialize(context.Message.Items);
-                    context.Saga.CreatedAt = DateTime.UtcNow;
                     context.Saga.UpdatedAt = DateTime.UtcNow;
                 })
-                .PublishAsync(context => context.Init<CreateOrderCommand>(new
-                {
-                    CorrelationId = context.Saga.CorrelationId,
-                    OrderId = context.Saga.OrderId,
-                    CustomerId = context.Saga.CustomerId,
-                    Items = context.Message.Items,
-                    TotalAmount = context.Saga.TotalAmount,
-                    ShippingAddress = context.Saga.ShippingAddress
-                }))
-                .TransitionTo(OrderCreating));
-
-        // Step 1: Order Creation
-        During(OrderCreating,
-            When(OrderCreated)
-                .Then(context => context.Saga.UpdatedAt = DateTime.UtcNow)
                 .PublishAsync(context => context.Init<ProcessPaymentCommand>(new
                 {
                     CorrelationId = context.Saga.CorrelationId,
@@ -119,7 +123,7 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
                 }))
                 .TransitionTo(PaymentProcessing),
 
-            When(OrderCreationFailed)
+            When(OrderValidationFailed)
                 .Then(context =>
                 {
                     context.Saga.LastError = context.Message.Reason;
@@ -137,12 +141,11 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
                     context.Saga.UpdatedAt = DateTime.UtcNow;
                 })
                 // Update order status then fulfill (async)
-                .PublishAsync(context => context.Init<UpdateOrderStatusCommand>(new
+                .PublishAsync(context => context.Init<MarkOrderAsPaymentCompletedCommand>(new
                 {
                     CorrelationId = context.Saga.CorrelationId,
                     OrderId = context.Saga.OrderId,
-                    Status = "PaymentCompleted",
-                    Reason = (string?)null
+                    TransactionId = context.Message.TransactionId
                 }))
                 .PublishAsync(context => context.Init<FulfillOrderCommand>(new
                 {
@@ -162,11 +165,10 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
                     context.Saga.UpdatedAt = DateTime.UtcNow;
                 })
                 // Update order status to PaymentFailed
-                .PublishAsync(context => context.Init<UpdateOrderStatusCommand>(new
+                .PublishAsync(context => context.Init<MarkOrderAsPaymentFailedCommand>(new
                 {
                     CorrelationId = context.Saga.CorrelationId,
                     OrderId = context.Saga.OrderId,
-                    Status = "PaymentFailed",
                     Reason = context.Message.Reason
                 }))
                 // Send payment failed email (async)
@@ -192,12 +194,11 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
                     context.Saga.UpdatedAt = DateTime.UtcNow;
                 })
                 // Update order status and send confirmation email (async)
-                .PublishAsync(context => context.Init<UpdateOrderStatusCommand>(new
+                .PublishAsync(context => context.Init<MarkOrderAsShippedCommand>(new
                 {
                     CorrelationId = context.Saga.CorrelationId,
                     OrderId = context.Saga.OrderId,
-                    Status = "Shipped",
-                    Reason = (string?)null
+                    TrackingNumber = context.Message.TrackingNumber
                 }))
                 .PublishAsync(context => context.Init<SendOrderConfirmationEmailCommand>(new
                 {
@@ -218,11 +219,10 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
                     context.Saga.UpdatedAt = DateTime.UtcNow;
                 })
                 // Update order status to BackOrdered
-                .PublishAsync(context => context.Init<UpdateOrderStatusCommand>(new
+                .PublishAsync(context => context.Init<MarkOrderAsBackOrderedCommand>(new
                 {
                     CorrelationId = context.Saga.CorrelationId,
                     OrderId = context.Saga.OrderId,
-                    Status = "BackOrdered",
                     Reason = context.Message.Reason
                 }))
                 // Refund payment due to out of stock
@@ -344,16 +344,14 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
 
 /// <summary>
 /// Command to initiate the order placement saga.
+/// The order must already exist in the Order Service.
 /// </summary>
 public record PlaceOrderCommand
 {
+    /// <summary>
+    /// The ID of an existing order to be placed.
+    /// </summary>
     public Guid OrderId { get; init; }
-    public Guid CustomerId { get; init; }
-    public List<OrderItemDto> Items { get; init; } = [];
-    public decimal TotalAmount { get; init; }
-    public string ShippingAddress { get; init; } = string.Empty;
-    public string CustomerEmail { get; init; } = string.Empty;
-    public string CustomerName { get; init; } = string.Empty;
 }
 
 public record FulfillmentItemDto

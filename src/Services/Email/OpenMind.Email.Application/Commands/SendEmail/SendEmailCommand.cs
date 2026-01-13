@@ -14,17 +14,12 @@ public record SendEmailCommand : ICommand<Guid>
     public string CustomerName { get; init; } = string.Empty;
     public string EmailType { get; init; } = string.Empty;
     public Dictionary<string, string> TemplateData { get; init; } = [];
+    public Guid CorrelationId { get; init; }
 }
 
-public class SendEmailCommandHandler : ICommandHandler<SendEmailCommand, Guid>
+public class SendEmailCommandHandler(IEmailNotificationRepository repository)
+    : ICommandHandler<SendEmailCommand, Guid>
 {
-    private readonly IEmailNotificationRepository _repository;
-
-    public SendEmailCommandHandler(IEmailNotificationRepository repository)
-    {
-        _repository = repository;
-    }
-
     public async Task<CommandResult<Guid>> Handle(SendEmailCommand request, CancellationToken cancellationToken)
     {
         try
@@ -46,14 +41,14 @@ public class SendEmailCommandHandler : ICommandHandler<SendEmailCommand, Guid>
 
             if (sendSuccess)
             {
-                email.MarkAsSent();
+                email.MarkAsSent(request.CorrelationId);
             }
             else
             {
-                email.MarkAsFailed("SMTP server temporarily unavailable");
+                email.MarkAsFailed("SMTP server temporarily unavailable", request.CorrelationId);
             }
 
-            await _repository.AddAsync(email, cancellationToken);
+            await repository.AddAsync(email, cancellationToken);
 
             return sendSuccess
                 ? CommandResult<Guid>.Success(email.Id)

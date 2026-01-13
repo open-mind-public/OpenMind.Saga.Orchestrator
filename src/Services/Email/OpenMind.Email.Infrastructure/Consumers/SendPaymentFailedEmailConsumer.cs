@@ -6,17 +6,9 @@ using OpenMind.Email.Domain.Enums;
 
 namespace OpenMind.Email.Infrastructure.Consumers;
 
-public class SendPaymentFailedEmailConsumer : IConsumer<SendPaymentFailedEmailCommand>
+public class SendPaymentFailedEmailConsumer(IMediator mediator)
+    : IConsumer<SendPaymentFailedEmailCommand>
 {
-    private readonly IMediator _mediator;
-    private readonly IPublishEndpoint _publishEndpoint;
-
-    public SendPaymentFailedEmailConsumer(IMediator mediator, IPublishEndpoint publishEndpoint)
-    {
-        _mediator = mediator;
-        _publishEndpoint = publishEndpoint;
-    }
-
     public async Task Consume(ConsumeContext<SendPaymentFailedEmailCommand> context)
     {
         var command = new SendEmailCommand
@@ -26,6 +18,7 @@ public class SendPaymentFailedEmailConsumer : IConsumer<SendPaymentFailedEmailCo
             CustomerEmail = context.Message.CustomerEmail,
             CustomerName = context.Message.CustomerName,
             EmailType = EmailType.PaymentFailed.Name,
+            CorrelationId = context.Message.CorrelationId,
             TemplateData = new Dictionary<string, string>
             {
                 ["OrderId"] = context.Message.OrderId.ToString(),
@@ -33,17 +26,6 @@ public class SendPaymentFailedEmailConsumer : IConsumer<SendPaymentFailedEmailCo
             }
         };
 
-        var result = await _mediator.Send(command);
-
-        if (result.IsSuccess)
-        {
-            await _publishEndpoint.Publish(new EmailSentEvent
-            {
-                CorrelationId = context.Message.CorrelationId,
-                OrderId = context.Message.OrderId,
-                EmailType = EmailType.PaymentFailed.Name,
-                RecipientEmail = context.Message.CustomerEmail
-            });
-        }
+        await mediator.Send(command);
     }
 }

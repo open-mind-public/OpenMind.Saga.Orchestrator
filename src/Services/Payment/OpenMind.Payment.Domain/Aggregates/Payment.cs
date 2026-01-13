@@ -1,6 +1,7 @@
 using OpenMind.BuildingBlocks.Domain;
 using OpenMind.Payment.Domain.Enums;
 using OpenMind.Payment.Domain.Events;
+using OpenMind.Payment.Domain.Rules;
 
 namespace OpenMind.Payment.Domain.Aggregates;
 
@@ -37,60 +38,71 @@ public class Payment : AggregateRoot<Guid>
 
     public static Payment Create(Guid orderId, Guid customerId, decimal amount, string paymentMethod, string cardNumber)
     {
+        CheckRule(new PaymentAmountMustBePositiveRule(amount));
+        CheckRule(new PaymentMethodMustBeProvidedRule(paymentMethod));
+        CheckRule(new CardNumberMustBeValidRule(cardNumber));
+
         var lastFour = cardNumber.Length >= 4 ? cardNumber[^4..] : cardNumber;
         var payment = new Payment(Guid.NewGuid(), orderId, customerId, amount, paymentMethod, lastFour);
-        payment.AddDomainEvent(new PaymentCreatedDomainEvent(payment.Id, orderId, amount));
+        payment.Emit(new PaymentCreatedDomainEvent(payment.Id, orderId, amount));
         return payment;
     }
 
-    public void MarkAsProcessing()
+    public void MarkAsProcessing(string cardNumber, string cardExpiry)
     {
-        if (Status != PaymentStatus.Pending)
-            throw new InvalidOperationException($"Cannot process payment in {Status} status");
+        CheckRule(new PaymentMustBeInStatusRule(Status, PaymentStatus.Pending, "process"));
 
         Status = PaymentStatus.Processing;
         SetUpdatedAt();
+        Emit(new PaymentProcessingStartedDomainEvent(Id, OrderId, Amount, cardNumber, cardExpiry));
     }
 
-    public void MarkAsCompleted(string transactionId)
+    public void MarkAsPaid(string transactionId)
     {
-        if (Status != PaymentStatus.Processing)
-            throw new InvalidOperationException($"Cannot complete payment in {Status} status");
+        CheckRule(new PaymentMustBeInStatusRule(Status, PaymentStatus.Processing, "mark as paid"));
 
         Status = PaymentStatus.Completed;
         TransactionId = transactionId;
         SetUpdatedAt();
-        AddDomainEvent(new PaymentCompletedDomainEvent(Id, OrderId, TransactionId));
+        Emit(new PaymentPaidDomainEvent(Id, OrderId, Amount, transactionId));
+    }
+
+    public void MarkAsCompleted(string transactionId)
+    {
+        CheckRule(new PaymentMustBeInStatusRule(Status, PaymentStatus.Processing, "complete"));
+
+        Status = PaymentStatus.Completed;
+        TransactionId = transactionId;
+        SetUpdatedAt();
+        Emit(new PaymentCompletedDomainEvent(Id, OrderId, TransactionId));
     }
 
     public void MarkAsFailed(string reason)
     {
-        if (Status != PaymentStatus.Processing)
-            throw new InvalidOperationException($"Cannot fail payment in {Status} status");
+        CheckRule(new PaymentMustBeInStatusRule(Status, PaymentStatus.Processing, "fail"));
 
         Status = PaymentStatus.Failed;
         FailureReason = reason;
         SetUpdatedAt();
-        AddDomainEvent(new PaymentFailedDomainEvent(Id, OrderId, reason));
+        Emit(new PaymentFailedDomainEvent(Id, OrderId, reason));
     }
 
-    public void MarkAsRefunded()
+    public void MarkAsRefunded(Guid correlationId)
     {
-        if (Status != PaymentStatus.Completed)
-            throw new InvalidOperationException($"Cannot refund payment in {Status} status");
+        CheckRule(new PaymentMustBeInStatusRule(Status, PaymentStatus.Completed, "refund"));
 
         Status = PaymentStatus.Refunded;
         SetUpdatedAt();
-        AddDomainEvent(new PaymentRefundedDomainEvent(Id, OrderId, Amount));
+        Emit(new PaymentRefundedDomainEvent(Id, OrderId, Amount, correlationId));
     }
 
-    public void MarkAsRefundFailed(string reason)
+    public void MarkAsRefundFailed(string reason, Guid correlationId)
     {
-        if (Status != PaymentStatus.Completed)
-            throw new InvalidOperationException($"Cannot mark refund failed in {Status} status");
+        CheckRule(new PaymentMustBeInStatusRule(Status, PaymentStatus.Completed, "mark refund failed"));
 
         Status = PaymentStatus.RefundFailed;
         FailureReason = reason;
         SetUpdatedAt();
+        Emit(new PaymentRefundFailedDomainEvent(Id, OrderId, reason, correlationId));
     }
 }

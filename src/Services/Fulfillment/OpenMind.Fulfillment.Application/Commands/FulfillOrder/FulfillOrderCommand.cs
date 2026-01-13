@@ -8,6 +8,7 @@ public record FulfillOrderCommand : ICommand<FulfillOrderResult>
     public Guid CustomerId { get; init; }
     public List<FulfillmentItemCommand> Items { get; init; } = [];
     public string ShippingAddress { get; init; } = string.Empty;
+    public Guid CorrelationId { get; init; }
 }
 
 public record FulfillmentItemCommand(Guid ProductId, string ProductName, int Quantity);
