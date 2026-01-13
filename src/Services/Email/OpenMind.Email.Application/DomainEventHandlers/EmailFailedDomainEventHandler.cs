@@ -1,7 +1,7 @@
 using MassTransit;
-using OpenMind.BuildingBlocks.Application.DomainEvents;
-using OpenMind.BuildingBlocks.IntegrationEvents.Email;
+using OpenMind.Email.IntegrationEvents.Events;
 using OpenMind.Email.Domain.Events;
+using OpenMind.Shared.Application.DomainEvents;
 
 namespace OpenMind.Email.Application.DomainEventHandlers;
 

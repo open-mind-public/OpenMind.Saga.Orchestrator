@@ -2,12 +2,13 @@ using FluentValidation;
 using MassTransit;
 using MediatR;
 using MongoDB.Driver;
-using OpenMind.BuildingBlocks.Application.Behaviors;
-using OpenMind.BuildingBlocks.Infrastructure.Persistence;
+using OpenMind.Email.Api.Endpoints;
 using OpenMind.Email.Application.Commands.SendEmail;
+using OpenMind.Email.Application.IntegrationCommandHandlers;
 using OpenMind.Email.Domain.Repositories;
-using OpenMind.Email.Infrastructure.Consumers;
 using OpenMind.Email.Infrastructure.Repositories;
+using OpenMind.Shared.Application.Behaviors;
+using OpenMind.Shared.MongoDb;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -67,9 +68,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapGet("/health", () => Results.Ok(new { Status = "Healthy", Service = "Email" }))
-.WithName("HealthCheck")
-.WithOpenApi();
+// Map endpoints
+app.MapHealthEndpoints("Email");
 
 Log.Information("Email Service starting...");
 app.Run();

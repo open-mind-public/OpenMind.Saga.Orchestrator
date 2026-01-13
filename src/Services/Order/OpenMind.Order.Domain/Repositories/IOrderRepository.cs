@@ -1,5 +1,5 @@
-using OpenMind.BuildingBlocks.Domain;
 using OpenMind.Order.Domain.Aggregates;
+using OpenMind.Shared.Domain;
 
 namespace OpenMind.Order.Domain.Repositories;
 

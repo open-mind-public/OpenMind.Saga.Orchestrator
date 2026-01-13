@@ -2,12 +2,13 @@ using FluentValidation;
 using MassTransit;
 using MediatR;
 using MongoDB.Driver;
-using OpenMind.BuildingBlocks.Application.Behaviors;
-using OpenMind.BuildingBlocks.Infrastructure.Persistence;
+using OpenMind.Order.Api.Endpoints;
 using OpenMind.Order.Application.Commands.CreateOrder;
+using OpenMind.Order.Application.IntegrationCommandHandlers;
 using OpenMind.Order.Domain.Repositories;
-using OpenMind.Order.Infrastructure.Consumers;
 using OpenMind.Order.Infrastructure.Repositories;
+using OpenMind.Shared.Application.Behaviors;
+using OpenMind.Shared.MongoDb;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -74,66 +75,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Minimal API Endpoints
-app.MapGet("/api/orders/{id:guid}", async (Guid id, IMediator mediator) =>
-{
-    var query = new OpenMind.Order.Application.Queries.GetOrder.GetOrderQuery(id);
-    var result = await mediator.Send(query);
-    return result.IsSuccess ? Results.Ok(result.Data) : Results.NotFound(result.ErrorMessage);
-})
-.WithName("GetOrder")
-.WithOpenApi();
-
-app.MapPost("/api/orders", async (CreateOrderRequest request, IMediator mediator) =>
-{
-    var command = new CreateOrderCommand
-    {
-        OrderId = Guid.NewGuid(),
-        CustomerId = request.CustomerId,
-        Items = request.Items.Select(i => new OrderItemCommand
-        {
-            ProductId = i.ProductId,
-            ProductName = i.ProductName,
-            Quantity = i.Quantity,
-            UnitPrice = i.UnitPrice
-        }).ToList(),
-        Street = request.ShippingAddress.Street,
-        City = request.ShippingAddress.City,
-        State = request.ShippingAddress.State,
-        ZipCode = request.ShippingAddress.ZipCode,
-        Country = request.ShippingAddress.Country
-    };
-
-    var result = await mediator.Send(command);
-    return result.IsSuccess
-        ? Results.Created($"/api/orders/{result.Data}", new { OrderId = result.Data })
-        : Results.BadRequest(result.ErrorMessage);
-})
-.WithName("CreateOrder")
-.WithOpenApi();
-
-app.MapGet("/health", () => Results.Ok(new { Status = "Healthy", Service = "Order" }))
-.WithName("HealthCheck")
-.WithOpenApi();
+// Map endpoints
+app.MapOrderEndpoints();
+app.MapHealthEndpoints("Order");
 
 Log.Information("Order Service starting...");
 app.Run();
-
-// Request DTOs
-public record CreateOrderRequest(
-    Guid CustomerId,
-    List<OrderItemRequest> Items,
-    AddressRequest ShippingAddress);
-
-public record OrderItemRequest(
-    Guid ProductId,
-    string ProductName,
-    int Quantity,
-    decimal UnitPrice);
-
-public record AddressRequest(
-    string Street,
-    string City,
-    string State,
-    string ZipCode,
-    string Country);

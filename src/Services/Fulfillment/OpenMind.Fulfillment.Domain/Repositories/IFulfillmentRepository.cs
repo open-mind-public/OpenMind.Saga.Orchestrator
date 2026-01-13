@@ -1,4 +1,4 @@
-using OpenMind.BuildingBlocks.Domain;
+using OpenMind.Shared.Domain;
 
 namespace OpenMind.Fulfillment.Domain.Repositories;
 

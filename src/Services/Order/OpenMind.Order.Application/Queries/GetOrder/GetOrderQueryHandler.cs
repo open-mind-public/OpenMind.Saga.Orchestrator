@@ -1,5 +1,5 @@
-using OpenMind.BuildingBlocks.Application.Queries;
 using OpenMind.Order.Domain.Repositories;
+using OpenMind.Shared.Application.Queries;
 
 namespace OpenMind.Order.Application.Queries.GetOrder;
 

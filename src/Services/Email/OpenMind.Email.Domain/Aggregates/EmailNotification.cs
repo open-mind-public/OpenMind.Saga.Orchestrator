@@ -1,7 +1,7 @@
-using OpenMind.BuildingBlocks.Domain;
 using OpenMind.Email.Domain.Enums;
 using OpenMind.Email.Domain.Events;
 using OpenMind.Email.Domain.Rules;
+using OpenMind.Shared.Domain;
 
 namespace OpenMind.Email.Domain.Aggregates;
 

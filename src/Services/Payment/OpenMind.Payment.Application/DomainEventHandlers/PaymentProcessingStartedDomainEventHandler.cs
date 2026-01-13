@@ -1,8 +1,8 @@
 using MediatR;
-using OpenMind.BuildingBlocks.Application.DomainEvents;
 using OpenMind.Payment.Application.Commands.MarkPaymentAsFailed;
 using OpenMind.Payment.Application.Commands.MarkPaymentAsPaid;
 using OpenMind.Payment.Domain.Events;
+using OpenMind.Shared.Application.DomainEvents;
 
 namespace OpenMind.Payment.Application.DomainEventHandlers;
 

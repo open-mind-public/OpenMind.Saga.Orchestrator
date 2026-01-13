@@ -1,4 +1,4 @@
-using OpenMind.BuildingBlocks.Application.Queries;
+using OpenMind.Shared.Application.Queries;
 
 namespace OpenMind.Order.Application.Queries.GetOrder;
 

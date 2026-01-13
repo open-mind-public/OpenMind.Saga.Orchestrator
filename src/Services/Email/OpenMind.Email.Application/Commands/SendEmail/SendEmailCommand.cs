@@ -1,8 +1,8 @@
-using OpenMind.BuildingBlocks.Application.Commands;
-using OpenMind.BuildingBlocks.Domain;
 using OpenMind.Email.Domain.Aggregates;
 using OpenMind.Email.Domain.Enums;
 using OpenMind.Email.Domain.Repositories;
+using OpenMind.Shared.Application.Commands;
+using OpenMind.Shared.Domain;
 
 namespace OpenMind.Email.Application.Commands.SendEmail;
 

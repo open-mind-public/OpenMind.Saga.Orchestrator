@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\BuildingBlocks\OpenMind.BuildingBlocks.Domain\OpenMind.BuildingBlocks.Domain.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\OpenMind.Shared.Domain\OpenMind.Shared.Domain.csproj" />
   </ItemGroup>
 
 </Project>

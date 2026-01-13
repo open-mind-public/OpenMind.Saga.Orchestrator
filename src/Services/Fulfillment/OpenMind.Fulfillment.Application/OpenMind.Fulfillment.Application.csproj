@@ -9,8 +9,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\BuildingBlocks\OpenMind.BuildingBlocks.Application\OpenMind.BuildingBlocks.Application.csproj" />
-    <ProjectReference Include="..\..\..\BuildingBlocks\OpenMind.BuildingBlocks.IntegrationEvents\OpenMind.BuildingBlocks.IntegrationEvents.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\OpenMind.Shared.Application\OpenMind.Shared.Application.csproj" />
+    <ProjectReference Include="..\OpenMind.Fulfillment.IntegrationMessages\OpenMind.Fulfillment.IntegrationMessages.csproj" />
     <ProjectReference Include="..\OpenMind.Fulfillment.Domain\OpenMind.Fulfillment.Domain.csproj" />
   </ItemGroup>
 

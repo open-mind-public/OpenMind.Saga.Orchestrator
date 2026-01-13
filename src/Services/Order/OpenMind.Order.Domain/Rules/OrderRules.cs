@@ -1,5 +1,5 @@
-using OpenMind.BuildingBlocks.Domain;
 using OpenMind.Order.Domain.Enums;
+using OpenMind.Shared.Domain;
 
 namespace OpenMind.Order.Domain.Rules;
 

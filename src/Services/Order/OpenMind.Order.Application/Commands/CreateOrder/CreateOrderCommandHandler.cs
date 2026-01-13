@@ -1,8 +1,8 @@
-using OpenMind.BuildingBlocks.Application.Commands;
 using OpenMind.Order.Domain.Aggregates;
 using OpenMind.Order.Domain.Entities;
 using OpenMind.Order.Domain.Repositories;
 using OpenMind.Order.Domain.ValueObjects;
+using OpenMind.Shared.Application.Commands;
 
 // Use alias to avoid namespace conflict
 using OrderAggregate = OpenMind.Order.Domain.Aggregates.Order;

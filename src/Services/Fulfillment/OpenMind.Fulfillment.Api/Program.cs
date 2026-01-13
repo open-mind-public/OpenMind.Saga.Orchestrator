@@ -2,12 +2,13 @@ using FluentValidation;
 using MassTransit;
 using MediatR;
 using MongoDB.Driver;
-using OpenMind.BuildingBlocks.Application.Behaviors;
-using OpenMind.BuildingBlocks.Infrastructure.Persistence;
+using OpenMind.Fulfillment.Api.Endpoints;
 using OpenMind.Fulfillment.Application.Commands.FulfillOrder;
+using OpenMind.Fulfillment.Application.IntegrationCommandHandlers;
 using OpenMind.Fulfillment.Domain.Repositories;
-using OpenMind.Fulfillment.Infrastructure.Consumers;
 using OpenMind.Fulfillment.Infrastructure.Repositories;
+using OpenMind.Shared.Application.Behaviors;
+using OpenMind.Shared.MongoDb;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -64,9 +65,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapGet("/health", () => Results.Ok(new { Status = "Healthy", Service = "Fulfillment" }))
-.WithName("HealthCheck")
-.WithOpenApi();
+// Map endpoints
+app.MapHealthEndpoints("Fulfillment");
 
 Log.Information("Fulfillment Service starting...");
 app.Run();

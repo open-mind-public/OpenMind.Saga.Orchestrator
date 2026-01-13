@@ -1,5 +1,5 @@
-using OpenMind.BuildingBlocks.Domain;
 using OpenMind.Order.Domain.ValueObjects;
+using OpenMind.Shared.Domain;
 
 namespace OpenMind.Order.Domain.Entities;
 

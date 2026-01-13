@@ -1,4 +1,4 @@
-using OpenMind.BuildingBlocks.Application.Commands;
+using OpenMind.Shared.Application.Commands;
 
 namespace OpenMind.Fulfillment.Application.Commands.CancelFulfillment;
 

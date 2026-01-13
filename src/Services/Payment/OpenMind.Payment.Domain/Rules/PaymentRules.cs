@@ -1,5 +1,5 @@
-using OpenMind.BuildingBlocks.Domain;
 using OpenMind.Payment.Domain.Enums;
+using OpenMind.Shared.Domain;
 
 namespace OpenMind.Payment.Domain.Rules;
 

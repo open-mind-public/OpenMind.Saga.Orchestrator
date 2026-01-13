@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>OpenMind.Order.IntegrationEvents</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\OpenMind.Shared.IntegrationMessages\OpenMind.Shared.IntegrationMessages.csproj" />
+  </ItemGroup>
+
+</Project>

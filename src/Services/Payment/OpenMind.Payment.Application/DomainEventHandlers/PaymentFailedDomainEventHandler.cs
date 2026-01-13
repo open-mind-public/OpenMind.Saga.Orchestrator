@@ -1,7 +1,7 @@
 using MassTransit;
-using OpenMind.BuildingBlocks.Application.DomainEvents;
-using OpenMind.BuildingBlocks.IntegrationEvents.Payments;
+using OpenMind.Payment.IntegrationEvents.Events;
 using OpenMind.Payment.Domain.Events;
+using OpenMind.Shared.Application.DomainEvents;
 
 namespace OpenMind.Payment.Application.DomainEventHandlers;
 

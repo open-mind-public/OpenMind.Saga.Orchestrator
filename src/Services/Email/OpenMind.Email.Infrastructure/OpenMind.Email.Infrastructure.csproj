@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\BuildingBlocks\OpenMind.BuildingBlocks.Infrastructure\OpenMind.BuildingBlocks.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\OpenMind.Shared.MongoDb\OpenMind.Shared.MongoDb.csproj" />
     <ProjectReference Include="..\OpenMind.Email.Application\OpenMind.Email.Application.csproj" />
   </ItemGroup>
 

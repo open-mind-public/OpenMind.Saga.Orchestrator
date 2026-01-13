@@ -1,5 +1,5 @@
-using OpenMind.BuildingBlocks.Application.Commands;
 using OpenMind.Payment.Domain.Repositories;
+using OpenMind.Shared.Application.Commands;
 
 namespace OpenMind.Payment.Application.Commands.MarkPaymentAsPaid;
 

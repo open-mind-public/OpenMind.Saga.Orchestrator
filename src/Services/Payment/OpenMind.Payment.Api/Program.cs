@@ -2,13 +2,13 @@ using FluentValidation;
 using MassTransit;
 using MediatR;
 using MongoDB.Driver;
-using OpenMind.BuildingBlocks.Application.Behaviors;
-using OpenMind.BuildingBlocks.Infrastructure.Behaviors;
-using OpenMind.BuildingBlocks.Infrastructure.Persistence;
+using OpenMind.Payment.Api.Endpoints;
 using OpenMind.Payment.Application.Commands.ProcessPayment;
+using OpenMind.Payment.Application.IntegrationCommandHandlers;
 using OpenMind.Payment.Domain.Repositories;
-using OpenMind.Payment.Infrastructure.Consumers;
 using OpenMind.Payment.Infrastructure.Repositories;
+using OpenMind.Shared.Application.Behaviors;
+using OpenMind.Shared.MongoDb;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -69,9 +69,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapGet("/health", () => Results.Ok(new { Status = "Healthy", Service = "Payment" }))
-.WithName("HealthCheck")
-.WithOpenApi();
+// Map endpoints
+app.MapHealthEndpoints("Payment");
 
 Log.Information("Payment Service starting...");
 app.Run();

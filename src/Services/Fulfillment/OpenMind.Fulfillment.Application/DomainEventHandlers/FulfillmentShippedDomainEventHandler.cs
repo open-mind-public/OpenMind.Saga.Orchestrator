@@ -1,7 +1,7 @@
 using MassTransit;
-using OpenMind.BuildingBlocks.Application.DomainEvents;
-using OpenMind.BuildingBlocks.IntegrationEvents.Fulfillment;
+using OpenMind.Fulfillment.IntegrationEvents.Events;
 using OpenMind.Fulfillment.Domain.Events;
+using OpenMind.Shared.Application.DomainEvents;
 
 namespace OpenMind.Fulfillment.Application.DomainEventHandlers;
 

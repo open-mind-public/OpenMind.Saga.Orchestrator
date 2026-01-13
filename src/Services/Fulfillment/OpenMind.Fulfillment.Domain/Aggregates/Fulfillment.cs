@@ -1,7 +1,7 @@
-using OpenMind.BuildingBlocks.Domain;
 using OpenMind.Fulfillment.Domain.Enums;
 using OpenMind.Fulfillment.Domain.Events;
 using OpenMind.Fulfillment.Domain.Rules;
+using OpenMind.Shared.Domain;
 
 namespace OpenMind.Fulfillment.Domain.Aggregates;
 

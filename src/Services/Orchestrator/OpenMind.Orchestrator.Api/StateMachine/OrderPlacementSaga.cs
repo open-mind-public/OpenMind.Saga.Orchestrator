@@ -1,8 +1,13 @@
 using MassTransit;
-using OpenMind.BuildingBlocks.IntegrationEvents.Email;
-using OpenMind.BuildingBlocks.IntegrationEvents.Fulfillment;
-using OpenMind.BuildingBlocks.IntegrationEvents.Orders;
-using OpenMind.BuildingBlocks.IntegrationEvents.Payments;
+using OpenMind.Email.IntegrationEvents.Commands;
+using OpenMind.Email.IntegrationEvents.Events;
+using OpenMind.Fulfillment.IntegrationEvents;
+using OpenMind.Fulfillment.IntegrationEvents.Commands;
+using OpenMind.Fulfillment.IntegrationEvents.Events;
+using OpenMind.Order.IntegrationEvents.Commands;
+using OpenMind.Order.IntegrationEvents.Events;
+using OpenMind.Payment.IntegrationEvents.Commands;
+using OpenMind.Payment.IntegrationEvents.Events;
 using System.Text.Json;
 
 namespace OpenMind.Orchestrator.Api.StateMachine;

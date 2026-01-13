@@ -1,9 +1,9 @@
-using OpenMind.BuildingBlocks.Domain;
 using OpenMind.Order.Domain.Entities;
 using OpenMind.Order.Domain.Enums;
 using OpenMind.Order.Domain.Events;
 using OpenMind.Order.Domain.Rules;
 using OpenMind.Order.Domain.ValueObjects;
+using OpenMind.Shared.Domain;
 
 namespace OpenMind.Order.Domain.Aggregates;
 
@@ -120,6 +120,7 @@ public class Order : AggregateRoot<Guid>
         Status = OrderStatus.Cancelled;
         CancellationReason = reason;
         SetUpdatedAt();
+        
         Emit(new OrderCancelledDomainEvent(Id, reason, correlationId));
     }
 

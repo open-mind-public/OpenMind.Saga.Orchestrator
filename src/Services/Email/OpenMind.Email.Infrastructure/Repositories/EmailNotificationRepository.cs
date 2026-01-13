@@ -1,6 +1,6 @@
 using MongoDB.Driver;
-using OpenMind.BuildingBlocks.Infrastructure.Persistence;
 using OpenMind.Email.Domain.Repositories;
+using OpenMind.Shared.MongoDb;
 
 namespace OpenMind.Email.Infrastructure.Repositories;
 

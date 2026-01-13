@@ -1,5 +1,5 @@
-using OpenMind.BuildingBlocks.Application.Commands;
 using OpenMind.Order.Domain.Repositories;
+using OpenMind.Shared.Application.Commands;
 
 namespace OpenMind.Order.Application.Commands.MarkOrderAsPaymentCompleted;
 

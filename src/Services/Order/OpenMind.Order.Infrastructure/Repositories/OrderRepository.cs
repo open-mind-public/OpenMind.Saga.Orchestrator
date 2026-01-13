@@ -1,8 +1,8 @@
 using MongoDB.Driver;
-using OpenMind.BuildingBlocks.Infrastructure.Persistence;
 using OpenMind.Order.Domain.Aggregates;
 using OpenMind.Order.Domain.Enums;
 using OpenMind.Order.Domain.Repositories;
+using OpenMind.Shared.MongoDb;
 using OrderAggregate = OpenMind.Order.Domain.Aggregates.Order;
 
 namespace OpenMind.Order.Infrastructure.Repositories;

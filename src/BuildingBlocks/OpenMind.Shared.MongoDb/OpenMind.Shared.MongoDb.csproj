@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="MongoDB.Driver" />
+    <PackageReference Include="MassTransit" />
+    <PackageReference Include="MassTransit.MongoDb" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenMind.Shared.Domain\OpenMind.Shared.Domain.csproj" />
+    <ProjectReference Include="..\OpenMind.Shared.Application\OpenMind.Shared.Application.csproj" />
+  </ItemGroup>
+
+</Project>
