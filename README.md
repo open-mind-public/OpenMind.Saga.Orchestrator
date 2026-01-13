@@ -1,2 +1,285 @@
-# OpenMind.Saga.Orchestrator
-Saga Orchestrator in mircroservice architecture.
+# OpenMind Saga Orchestrator
+
+A comprehensive implementation of the **Saga Orchestrator Pattern** for distributed transactions in a microservices architecture.
+
+## 🏗️ Architecture Overview
+
+This solution implements an **Order Placement Orchestrator** that coordinates a distributed transaction across multiple microservices:
+
+```
+┌─────────────────┐
+│   Client/UI     │
+└────────┬────────┘
+         │ "place order"
+         ▼
+┌─────────────────────────────────────────────────────────────┐
+│              Order Placement Orchestrator                    │
+│           (MassTransit State Machine Saga)                  │
+│                                                              │
+│  States: Initial → OrderCreating → PaymentProcessing →      │
+│          Fulfilling → SendingConfirmation → Completed       │
+│                                                              │
+│  Error States: PaymentFailed → SendingPaymentFailedEmail    │
+│               FulfillmentFailed → RefundingPayment →        │
+│               SendingBackorderEmail → Cancelled              │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+    ┌──────────────────┼──────────────────┐
+    │                  │                   │
+    ▼                  ▼                   ▼
+┌───────────┐   ┌───────────┐   ┌──────────────┐   ┌──────────┐
+│  Order    │   │  Payment  │   │ Fulfillment  │   │  Email   │
+│ Placement │   │  Service  │   │   Service    │   │ Service  │
+│  Service  │   │           │   │              │   │          │
+└───────────┘   └───────────┘   └──────────────┘   └──────────┘
+    │                │                 │                 │
+    ▼                ▼                 ▼                 ▼
+┌───────────────────────────────────────────────────────────────┐
+│                        MongoDB                                 │
+└───────────────────────────────────────────────────────────────┘
+```
+
+## 🚀 Features
+
+### Saga Orchestrator Pattern
+- **Centralized Workflow Management**: Single point of control for the entire order placement process
+- **State Machine Implementation**: Using MassTransit's Automatonymous state machine
+- **Compensating Transactions**: Automatic rollback capabilities (refunds, cancellations)
+- **Queryable State**: Track order progress at any time
+
+### Clean Architecture per Microservice
+Each service follows Clean Architecture with:
+- **Domain Layer**: Entities, Value Objects, Aggregates, Domain Events
+- **Application Layer**: CQRS (Commands/Queries), Handlers, Validators
+- **Infrastructure Layer**: Repositories, Message Consumers
+- **API Layer**: Minimal APIs, Swagger documentation
+
+### DDD Tactical Patterns
+- **Aggregate Roots**: Order, Payment, Fulfillment, EmailNotification
+- **Value Objects**: Money, Address, CustomerId, OrderId
+- **Domain Events**: OrderCreated, PaymentCompleted, etc.
+- **Strongly Typed IDs**: Type-safe identifiers
+- **Smart Enums**: OrderStatus, PaymentStatus, FulfillmentStatus
+
+### Technology Stack
+- **.NET 10** with C# 13
+- **MassTransit** for messaging and saga orchestration
+- **MongoDB** for persistence
+- **MediatR** for CQRS
+- **FluentValidation** for request validation
+- **Serilog** for structured logging
+
+## 📁 Project Structure
+
+```
+src/
+├── BuildingBlocks/
+│   ├── OpenMind.BuildingBlocks.Domain/          # DDD building blocks
+│   ├── OpenMind.BuildingBlocks.Application/     # CQRS abstractions
+│   ├── OpenMind.BuildingBlocks.Infrastructure/  # MongoDB, persistence
+│   └── OpenMind.BuildingBlocks.IntegrationEvents/ # Shared events/commands
+│
+└── Services/
+    ├── Orchestrator/
+    │   └── OpenMind.Orchestrator.Api/           # Saga State Machine
+    ├── OrderPlacement/
+    │   ├── OpenMind.OrderPlacement.Domain/
+    │   ├── OpenMind.OrderPlacement.Application/
+    │   ├── OpenMind.OrderPlacement.Infrastructure/
+    │   └── OpenMind.OrderPlacement.Api/
+    ├── Payment/
+    │   └── ... (same structure)
+    ├── Fulfillment/
+    │   └── ... (same structure)
+    └── Email/
+        └── ... (same structure)
+```
+
+## 🔄 Workflow Scenarios
+
+### Happy Path
+1. **Place Order** → Order is created in Order Placement Service
+2. **Process Payment** → Payment is processed (synchronous)
+3. **Fulfill Order** → Items are shipped (asynchronous)
+4. **Send Confirmation** → Email notification sent (asynchronous)
+5. **Complete** → Saga finishes successfully
+
+### Payment Failure Path
+1. **Place Order** → Order created
+2. **Process Payment** → Payment declined (expired card, etc.)
+3. **Update Order** → Mark as PaymentFailed
+4. **Send Notification** → Email customer about payment failure
+5. **Cancel** → Saga ends with cancelled state
+
+### Out of Stock Path
+1. **Place Order** → Order created
+2. **Process Payment** → Payment successful
+3. **Fulfill Order** → Items out of stock
+4. **Update Order** → Mark as BackOrdered
+5. **Refund Payment** → Compensating transaction
+6. **Send Notification** → Email customer about backorder & refund
+7. **Cancel** → Saga ends with cancelled state
+
+## 🚀 Getting Started
+
+### Prerequisites
+- .NET 10 SDK
+- Docker & Docker Compose
+- MongoDB (or use Docker)
+
+### Local Development
+
+1. **Start MongoDB**:
+```bash
+docker run -d -p 27017:27017 --name mongodb mongo:7.0
+```
+
+2. **Build the solution**:
+```bash
+dotnet build
+```
+
+3. **Run all services** (in separate terminals):
+```bash
+# Terminal 1 - Orchestrator
+cd src/Services/Orchestrator/OpenMind.Orchestrator.Api
+dotnet run
+
+# Terminal 2 - Order Placement
+cd src/Services/OrderPlacement/OpenMind.OrderPlacement.Api
+dotnet run --urls=http://localhost:5001
+
+# Terminal 3 - Payment
+cd src/Services/Payment/OpenMind.Payment.Api
+dotnet run --urls=http://localhost:5002
+
+# Terminal 4 - Fulfillment
+cd src/Services/Fulfillment/OpenMind.Fulfillment.Api
+dotnet run --urls=http://localhost:5003
+
+# Terminal 5 - Email
+cd src/Services/Email/OpenMind.Email.Api
+dotnet run --urls=http://localhost:5004
+```
+
+### Using Docker Compose
+```bash
+docker-compose up --build
+```
+
+## 📡 API Endpoints
+
+### Place Order (Orchestrator - Port 5000)
+```bash
+POST http://localhost:5000/api/orders/place
+Content-Type: application/json
+
+{
+  "customerId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "customerName": "John Doe",
+  "customerEmail": "john.doe@example.com",
+  "items": [
+    {
+      "productId": "3fa85f64-5717-4562-b3fc-2c963f66afa7",
+      "productName": "Laptop",
+      "quantity": 1,
+      "unitPrice": 999.99
+    }
+  ],
+  "shippingAddress": {
+    "street": "123 Main St",
+    "city": "New York",
+    "state": "NY",
+    "zipCode": "10001",
+    "country": "USA"
+  }
+}
+```
+
+### Get Order Status
+```bash
+GET http://localhost:5000/api/orders/{orderId}/status
+```
+
+### List All Orders
+```bash
+GET http://localhost:5000/api/orders?page=1&pageSize=10
+```
+
+### Health Checks
+```bash
+GET http://localhost:5000/health   # Orchestrator
+GET http://localhost:5001/health   # Order Placement
+GET http://localhost:5002/health   # Payment
+GET http://localhost:5003/health   # Fulfillment
+GET http://localhost:5004/health   # Email
+```
+
+## 🧪 Simulating Different Scenarios
+
+The services include built-in simulation for testing:
+- **Payment Service**: 90% success rate (10% random failures)
+- **Fulfillment Service**: 85% in-stock rate (15% out-of-stock)
+- **Email Service**: 98% delivery rate
+
+Run multiple order requests to see different workflow paths execute.
+
+## 🔧 Configuration
+
+### MongoDB Connection
+Each service has its own database:
+```json
+{
+  "MongoDB": {
+    "ConnectionString": "mongodb://localhost:27017",
+    "DatabaseName": "ServiceNameDb"
+  }
+}
+```
+
+### Service Ports
+| Service | Port |
+|---------|------|
+| Orchestrator | 5000 |
+| Order Placement | 5001 |
+| Payment | 5002 |
+| Fulfillment | 5003 |
+| Email | 5004 |
+| MongoDB | 27017 |
+
+## 📚 Key Concepts
+
+### Saga State Machine States
+- `Initial` - Starting state
+- `OrderCreating` - Creating order record
+- `PaymentProcessing` - Processing payment
+- `Fulfilling` - Shipping order (async)
+- `SendingConfirmation` - Sending success email (async)
+- `RefundingPayment` - Compensating transaction
+- `SendingPaymentFailedEmail` - Error notification
+- `SendingBackorderEmail` - Backorder notification
+- `Completed` - Successfully completed
+- `Cancelled` - Cancelled (with compensation)
+- `Failed` - Unrecoverable failure
+
+### Integration Events
+Commands (from Orchestrator):
+- `CreateOrderCommand`
+- `ProcessPaymentCommand`
+- `FulfillOrderCommand`
+- `SendOrderConfirmationEmailCommand`
+- `RefundPaymentCommand`
+
+Events (to Orchestrator):
+- `OrderCreatedEvent`
+- `PaymentCompletedEvent` / `PaymentFailedEvent`
+- `OrderShippedEvent` / `FulfillmentFailedEvent`
+- `EmailSentEvent`
+
+## 📝 License
+
+MIT License - see [LICENSE](LICENSE) file for details.
+
+## 👥 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.

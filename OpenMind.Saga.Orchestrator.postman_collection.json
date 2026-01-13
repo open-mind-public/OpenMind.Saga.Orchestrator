@@ -1,0 +1,756 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+		"name": "OpenMind Saga Orchestrator",
+		"description": "Postman collection for testing the OpenMind Saga Orchestrator microservices.\n\n## Services\n- **Orchestrator** (Port 5000): Main saga orchestrator that coordinates order placement workflow\n- **OrderPlacement** (Port 5001): Manages order creation and storage\n- **Payment** (Port 5002): Handles payment processing\n- **Fulfillment** (Port 5003): Manages order fulfillment and shipping\n- **Email** (Port 5004): Sends notification emails\n\n## Workflow\n1. Use \"Place Order (Start Saga)\" to initiate an order\n2. Monitor order status using \"Get Order Status\"\n3. The saga automatically coordinates with all services",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "orchestrator_url",
+			"value": "http://localhost:5000",
+			"type": "string"
+		},
+		{
+			"key": "orderplacement_url",
+			"value": "http://localhost:5001",
+			"type": "string"
+		},
+		{
+			"key": "payment_url",
+			"value": "http://localhost:5002",
+			"type": "string"
+		},
+		{
+			"key": "fulfillment_url",
+			"value": "http://localhost:5003",
+			"type": "string"
+		},
+		{
+			"key": "email_url",
+			"value": "http://localhost:5004",
+			"type": "string"
+		},
+		{
+			"key": "order_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "customer_id",
+			"value": "{{$guid}}",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Orchestrator",
+			"description": "Order Placement Orchestrator API - manages the saga workflow",
+			"item": [
+				{
+					"name": "Place Order (Start Saga)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 202) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"order_id\", jsonData.orderId);",
+									"    pm.test(\"Order placement initiated\", function () {",
+									"        pm.expect(jsonData.orderId).to.not.be.null;",
+									"        pm.expect(jsonData.status).to.eql(\"Processing\");",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customerId\": \"{{$guid}}\",\n    \"customerName\": \"John Doe\",\n    \"customerEmail\": \"john.doe@example.com\",\n    \"items\": [\n        {\n            \"productId\": \"{{$guid}}\",\n            \"productName\": \"MacBook Pro 16\",\n            \"quantity\": 1,\n            \"unitPrice\": 2499.99\n        },\n        {\n            \"productId\": \"{{$guid}}\",\n            \"productName\": \"Magic Mouse\",\n            \"quantity\": 2,\n            \"unitPrice\": 99.99\n        }\n    ],\n    \"shippingAddress\": {\n        \"street\": \"123 Tech Street\",\n        \"city\": \"San Francisco\",\n        \"state\": \"CA\",\n        \"zipCode\": \"94102\",\n        \"country\": \"USA\"\n    }\n}"
+						},
+						"url": {
+							"raw": "{{orchestrator_url}}/api/orders/place",
+							"host": [
+								"{{orchestrator_url}}"
+							],
+							"path": [
+								"api",
+								"orders",
+								"place"
+							]
+						},
+						"description": "Initiates the order placement saga. This endpoint publishes a PlaceOrderCommand that triggers the orchestrator state machine to coordinate with OrderPlacement, Payment, Fulfillment, and Email services."
+					},
+					"response": [
+						{
+							"name": "Order Accepted",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"customerId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n    \"customerName\": \"John Doe\",\n    \"customerEmail\": \"john.doe@example.com\",\n    \"items\": [\n        {\n            \"productId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n            \"productName\": \"MacBook Pro 16\",\n            \"quantity\": 1,\n            \"unitPrice\": 2499.99\n        }\n    ],\n    \"shippingAddress\": {\n        \"street\": \"123 Tech Street\",\n        \"city\": \"San Francisco\",\n        \"state\": \"CA\",\n        \"zipCode\": \"94102\",\n        \"country\": \"USA\"\n    }\n}"
+								},
+								"url": {
+									"raw": "{{orchestrator_url}}/api/orders/place",
+									"host": [
+										"{{orchestrator_url}}"
+									],
+									"path": [
+										"api",
+										"orders",
+										"place"
+									]
+								}
+							},
+							"status": "Accepted",
+							"code": 202,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"orderId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n    \"message\": \"Order placement initiated\",\n    \"status\": \"Processing\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Order Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has order details\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.orderId).to.not.be.null;",
+									"    pm.expect(jsonData.currentState).to.not.be.null;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{orchestrator_url}}/api/orders/{{order_id}}/status",
+							"host": [
+								"{{orchestrator_url}}"
+							],
+							"path": [
+								"api",
+								"orders",
+								"{{order_id}}",
+								"status"
+							]
+						},
+						"description": "Retrieves the current status of an order saga, including the current state, tracking number, estimated delivery, and any errors."
+					},
+					"response": [
+						{
+							"name": "Order Status - Completed",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{orchestrator_url}}/api/orders/{{order_id}}/status",
+									"host": [
+										"{{orchestrator_url}}"
+									],
+									"path": [
+										"api",
+										"orders",
+										"{{order_id}}",
+										"status"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"orderId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n    \"customerId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n    \"currentState\": \"Completed\",\n    \"totalAmount\": 2699.97,\n    \"trackingNumber\": \"TRK-ABC123\",\n    \"estimatedDelivery\": \"2026-01-20T10:00:00Z\",\n    \"lastError\": null,\n    \"createdAt\": \"2026-01-13T10:00:00Z\",\n    \"updatedAt\": \"2026-01-13T10:05:00Z\",\n    \"completedAt\": \"2026-01-13T10:05:00Z\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Get All Orders (Paginated)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has pagination info\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.totalCount).to.be.a('number');",
+									"    pm.expect(jsonData.page).to.be.a('number');",
+									"    pm.expect(jsonData.orders).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{orchestrator_url}}/api/orders?page=1&pageSize=10",
+							"host": [
+								"{{orchestrator_url}}"
+							],
+							"path": [
+								"api",
+								"orders"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number (default: 1)"
+								},
+								{
+									"key": "pageSize",
+									"value": "10",
+									"description": "Number of items per page (default: 10)"
+								}
+							]
+						},
+						"description": "Retrieves a paginated list of all orders with their basic information and current state."
+					},
+					"response": []
+				},
+				{
+					"name": "Health Check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Service is healthy\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.status).to.eql(\"Healthy\");",
+									"    pm.expect(jsonData.service).to.eql(\"Orchestrator\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{orchestrator_url}}/health",
+							"host": [
+								"{{orchestrator_url}}"
+							],
+							"path": [
+								"health"
+							]
+						},
+						"description": "Health check endpoint for the Orchestrator service."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Order Placement Service",
+			"description": "Order Placement Service API - manages order entities",
+			"item": [
+				{
+					"name": "Create Order (Direct)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"order_id\", jsonData.orderId);",
+									"    pm.test(\"Order created successfully\", function () {",
+									"        pm.expect(jsonData.orderId).to.not.be.null;",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customerId\": \"{{$guid}}\",\n    \"items\": [\n        {\n            \"productId\": \"{{$guid}}\",\n            \"productName\": \"iPhone 15 Pro\",\n            \"quantity\": 1,\n            \"unitPrice\": 1199.99\n        },\n        {\n            \"productId\": \"{{$guid}}\",\n            \"productName\": \"AirPods Pro\",\n            \"quantity\": 1,\n            \"unitPrice\": 249.99\n        }\n    ],\n    \"shippingAddress\": {\n        \"street\": \"456 Innovation Ave\",\n        \"city\": \"Seattle\",\n        \"state\": \"WA\",\n        \"zipCode\": \"98101\",\n        \"country\": \"USA\"\n    }\n}"
+						},
+						"url": {
+							"raw": "{{orderplacement_url}}/api/orders",
+							"host": [
+								"{{orderplacement_url}}"
+							],
+							"path": [
+								"api",
+								"orders"
+							]
+						},
+						"description": "Creates an order directly in the Order Placement service (bypasses the saga orchestrator). Use this for testing the Order Placement service in isolation."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Order by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{orderplacement_url}}/api/orders/{{order_id}}",
+							"host": [
+								"{{orderplacement_url}}"
+							],
+							"path": [
+								"api",
+								"orders",
+								"{{order_id}}"
+							]
+						},
+						"description": "Retrieves an order by its ID from the Order Placement service."
+					},
+					"response": []
+				},
+				{
+					"name": "Health Check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Service is healthy\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.status).to.eql(\"Healthy\");",
+									"    pm.expect(jsonData.service).to.eql(\"OrderPlacement\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{orderplacement_url}}/health",
+							"host": [
+								"{{orderplacement_url}}"
+							],
+							"path": [
+								"health"
+							]
+						},
+						"description": "Health check endpoint for the Order Placement service."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Payment Service",
+			"description": "Payment Service API - handles payment processing",
+			"item": [
+				{
+					"name": "Health Check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Service is healthy\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.status).to.eql(\"Healthy\");",
+									"    pm.expect(jsonData.service).to.eql(\"Payment\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{payment_url}}/health",
+							"host": [
+								"{{payment_url}}"
+							],
+							"path": [
+								"health"
+							]
+						},
+						"description": "Health check endpoint for the Payment service. The Payment service processes payments through integration events from the orchestrator."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Fulfillment Service",
+			"description": "Fulfillment Service API - manages order fulfillment and shipping",
+			"item": [
+				{
+					"name": "Health Check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Service is healthy\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.status).to.eql(\"Healthy\");",
+									"    pm.expect(jsonData.service).to.eql(\"Fulfillment\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{fulfillment_url}}/health",
+							"host": [
+								"{{fulfillment_url}}"
+							],
+							"path": [
+								"health"
+							]
+						},
+						"description": "Health check endpoint for the Fulfillment service. The Fulfillment service handles shipping through integration events from the orchestrator."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Email Service",
+			"description": "Email Service API - sends notification emails",
+			"item": [
+				{
+					"name": "Health Check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Service is healthy\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.status).to.eql(\"Healthy\");",
+									"    pm.expect(jsonData.service).to.eql(\"Email\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{email_url}}/health",
+							"host": [
+								"{{email_url}}"
+							],
+							"path": [
+								"health"
+							]
+						},
+						"description": "Health check endpoint for the Email service. The Email service sends notifications through integration events from the orchestrator."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Health Checks",
+			"description": "Quick health check for all services",
+			"item": [
+				{
+					"name": "All Services Health Check",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// This request runs all health checks sequentially"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Orchestrator is healthy\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{orchestrator_url}}/health",
+							"host": [
+								"{{orchestrator_url}}"
+							],
+							"path": [
+								"health"
+							]
+						},
+						"description": "Run this request to verify the Orchestrator service is running."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "End-to-End Test",
+			"description": "Complete order placement workflow test",
+			"item": [
+				{
+					"name": "1. Place Order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Order accepted\", function () {",
+									"    pm.response.to.have.status(202);",
+									"});",
+									"",
+									"if (pm.response.code === 202) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"order_id\", jsonData.orderId);",
+									"    console.log(\"Order ID: \" + jsonData.orderId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customerId\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n    \"customerName\": \"Test Customer\",\n    \"customerEmail\": \"test@example.com\",\n    \"items\": [\n        {\n            \"productId\": \"f1e2d3c4-b5a6-7890-1234-567890abcdef\",\n            \"productName\": \"Test Product\",\n            \"quantity\": 2,\n            \"unitPrice\": 99.99\n        }\n    ],\n    \"shippingAddress\": {\n        \"street\": \"789 Test Lane\",\n        \"city\": \"Test City\",\n        \"state\": \"TX\",\n        \"zipCode\": \"75001\",\n        \"country\": \"USA\"\n    }\n}"
+						},
+						"url": {
+							"raw": "{{orchestrator_url}}/api/orders/place",
+							"host": [
+								"{{orchestrator_url}}"
+							],
+							"path": [
+								"api",
+								"orders",
+								"place"
+							]
+						},
+						"description": "Step 1: Place a new order to start the saga"
+					},
+					"response": []
+				},
+				{
+					"name": "2. Wait for Processing",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Wait 2 seconds for saga to process",
+									"setTimeout(function(){}, 2000);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Order found\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"console.log(\"Current State: \" + jsonData.currentState);",
+									"",
+									"pm.test(\"Order has valid state\", function () {",
+									"    var validStates = [\"Initial\", \"OrderCreated\", \"PaymentProcessed\", \"FulfillmentCompleted\", \"Completed\", \"Failed\"];",
+									"    pm.expect(validStates).to.include(jsonData.currentState);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{orchestrator_url}}/api/orders/{{order_id}}/status",
+							"host": [
+								"{{orchestrator_url}}"
+							],
+							"path": [
+								"api",
+								"orders",
+								"{{order_id}}",
+								"status"
+							]
+						},
+						"description": "Step 2: Check order status after a brief wait"
+					},
+					"response": []
+				},
+				{
+					"name": "3. Verify Final Status",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Additional wait for saga completion",
+									"setTimeout(function(){}, 3000);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Order found\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"console.log(\"Final State: \" + jsonData.currentState);",
+									"",
+									"if (jsonData.currentState === \"Completed\") {",
+									"    pm.test(\"Order completed with tracking\", function () {",
+									"        pm.expect(jsonData.trackingNumber).to.not.be.null;",
+									"        pm.expect(jsonData.completedAt).to.not.be.null;",
+									"    });",
+									"}",
+									"",
+									"if (jsonData.currentState === \"Failed\") {",
+									"    console.log(\"Error: \" + jsonData.lastError);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{orchestrator_url}}/api/orders/{{order_id}}/status",
+							"host": [
+								"{{orchestrator_url}}"
+							],
+							"path": [
+								"api",
+								"orders",
+								"{{order_id}}",
+								"status"
+							]
+						},
+						"description": "Step 3: Verify the final status of the order after saga completion"
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

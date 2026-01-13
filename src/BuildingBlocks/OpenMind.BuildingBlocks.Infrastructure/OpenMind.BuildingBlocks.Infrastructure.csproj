@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>OpenMind.BuildingBlocks.Infrastructure</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MongoDB.Driver" />
+    <PackageReference Include="MassTransit" />
+    <PackageReference Include="MassTransit.MongoDb" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenMind.BuildingBlocks.Domain\OpenMind.BuildingBlocks.Domain.csproj" />
+    <ProjectReference Include="..\OpenMind.BuildingBlocks.Application\OpenMind.BuildingBlocks.Application.csproj" />
+  </ItemGroup>
+
+</Project>

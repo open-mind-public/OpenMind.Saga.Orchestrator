@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>OpenMind.Email.Application</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\OpenMind.BuildingBlocks.Application\OpenMind.BuildingBlocks.Application.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\OpenMind.BuildingBlocks.IntegrationEvents\OpenMind.BuildingBlocks.IntegrationEvents.csproj" />
+    <ProjectReference Include="..\OpenMind.Email.Domain\OpenMind.Email.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

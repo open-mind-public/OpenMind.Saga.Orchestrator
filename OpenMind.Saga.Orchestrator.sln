@@ -1,0 +1,200 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+
+# Solution Folders
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A0000000-0000-0000-0000-000000000001}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BuildingBlocks", "BuildingBlocks", "{A0000000-0000-0000-0000-000000000002}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{A0000000-0000-0000-0000-000000000003}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OrderPlacement", "OrderPlacement", "{A0000000-0000-0000-0000-000000000004}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Payment", "Payment", "{A0000000-0000-0000-0000-000000000005}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Fulfillment", "Fulfillment", "{A0000000-0000-0000-0000-000000000006}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Email", "Email", "{A0000000-0000-0000-0000-000000000007}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Orchestrator", "Orchestrator", "{A0000000-0000-0000-0000-000000000008}"
+EndProject
+
+# BuildingBlocks Projects
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.BuildingBlocks.Domain", "src/BuildingBlocks/OpenMind.BuildingBlocks.Domain/OpenMind.BuildingBlocks.Domain.csproj", "{B1000001-0000-0000-0000-000000000001}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.BuildingBlocks.Application", "src/BuildingBlocks/OpenMind.BuildingBlocks.Application/OpenMind.BuildingBlocks.Application.csproj", "{B1000001-0000-0000-0000-000000000002}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.BuildingBlocks.Infrastructure", "src/BuildingBlocks/OpenMind.BuildingBlocks.Infrastructure/OpenMind.BuildingBlocks.Infrastructure.csproj", "{B1000001-0000-0000-0000-000000000003}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.BuildingBlocks.IntegrationEvents", "src/BuildingBlocks/OpenMind.BuildingBlocks.IntegrationEvents/OpenMind.BuildingBlocks.IntegrationEvents.csproj", "{B1000001-0000-0000-0000-000000000004}"
+EndProject
+
+# OrderPlacement Service Projects
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.OrderPlacement.Domain", "src/Services/OrderPlacement/OpenMind.OrderPlacement.Domain/OpenMind.OrderPlacement.Domain.csproj", "{C1000001-0000-0000-0000-000000000001}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.OrderPlacement.Application", "src/Services/OrderPlacement/OpenMind.OrderPlacement.Application/OpenMind.OrderPlacement.Application.csproj", "{C1000001-0000-0000-0000-000000000002}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.OrderPlacement.Infrastructure", "src/Services/OrderPlacement/OpenMind.OrderPlacement.Infrastructure/OpenMind.OrderPlacement.Infrastructure.csproj", "{C1000001-0000-0000-0000-000000000003}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.OrderPlacement.Api", "src/Services/OrderPlacement/OpenMind.OrderPlacement.Api/OpenMind.OrderPlacement.Api.csproj", "{C1000001-0000-0000-0000-000000000004}"
+EndProject
+
+# Payment Service Projects
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Payment.Domain", "src/Services/Payment/OpenMind.Payment.Domain/OpenMind.Payment.Domain.csproj", "{D1000001-0000-0000-0000-000000000001}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Payment.Application", "src/Services/Payment/OpenMind.Payment.Application/OpenMind.Payment.Application.csproj", "{D1000001-0000-0000-0000-000000000002}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Payment.Infrastructure", "src/Services/Payment/OpenMind.Payment.Infrastructure/OpenMind.Payment.Infrastructure.csproj", "{D1000001-0000-0000-0000-000000000003}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Payment.Api", "src/Services/Payment/OpenMind.Payment.Api/OpenMind.Payment.Api.csproj", "{D1000001-0000-0000-0000-000000000004}"
+EndProject
+
+# Fulfillment Service Projects
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Fulfillment.Domain", "src/Services/Fulfillment/OpenMind.Fulfillment.Domain/OpenMind.Fulfillment.Domain.csproj", "{E1000001-0000-0000-0000-000000000001}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Fulfillment.Application", "src/Services/Fulfillment/OpenMind.Fulfillment.Application/OpenMind.Fulfillment.Application.csproj", "{E1000001-0000-0000-0000-000000000002}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Fulfillment.Infrastructure", "src/Services/Fulfillment/OpenMind.Fulfillment.Infrastructure/OpenMind.Fulfillment.Infrastructure.csproj", "{E1000001-0000-0000-0000-000000000003}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Fulfillment.Api", "src/Services/Fulfillment/OpenMind.Fulfillment.Api/OpenMind.Fulfillment.Api.csproj", "{E1000001-0000-0000-0000-000000000004}"
+EndProject
+
+# Email Service Projects
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Email.Domain", "src/Services/Email/OpenMind.Email.Domain/OpenMind.Email.Domain.csproj", "{F1000001-0000-0000-0000-000000000001}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Email.Application", "src/Services/Email/OpenMind.Email.Application/OpenMind.Email.Application.csproj", "{F1000001-0000-0000-0000-000000000002}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Email.Infrastructure", "src/Services/Email/OpenMind.Email.Infrastructure/OpenMind.Email.Infrastructure.csproj", "{F1000001-0000-0000-0000-000000000003}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Email.Api", "src/Services/Email/OpenMind.Email.Api/OpenMind.Email.Api.csproj", "{F1000001-0000-0000-0000-000000000004}"
+EndProject
+
+# Orchestrator Service Projects
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Orchestrator.Api", "src/Services/Orchestrator/OpenMind.Orchestrator.Api/OpenMind.Orchestrator.Api.csproj", "{01000001-0000-0000-0000-000000000001}"
+EndProject
+
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B1000001-0000-0000-0000-000000000001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1000001-0000-0000-0000-000000000001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1000001-0000-0000-0000-000000000001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1000001-0000-0000-0000-000000000001}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1000001-0000-0000-0000-000000000002}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1000001-0000-0000-0000-000000000002}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1000001-0000-0000-0000-000000000002}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1000001-0000-0000-0000-000000000002}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1000001-0000-0000-0000-000000000003}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1000001-0000-0000-0000-000000000003}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1000001-0000-0000-0000-000000000003}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1000001-0000-0000-0000-000000000003}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1000001-0000-0000-0000-000000000004}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1000001-0000-0000-0000-000000000004}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1000001-0000-0000-0000-000000000004}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1000001-0000-0000-0000-000000000004}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1000001-0000-0000-0000-000000000001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1000001-0000-0000-0000-000000000001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1000001-0000-0000-0000-000000000001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1000001-0000-0000-0000-000000000001}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1000001-0000-0000-0000-000000000002}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1000001-0000-0000-0000-000000000002}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1000001-0000-0000-0000-000000000002}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1000001-0000-0000-0000-000000000002}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1000001-0000-0000-0000-000000000003}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1000001-0000-0000-0000-000000000003}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1000001-0000-0000-0000-000000000003}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1000001-0000-0000-0000-000000000003}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1000001-0000-0000-0000-000000000004}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1000001-0000-0000-0000-000000000004}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1000001-0000-0000-0000-000000000004}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1000001-0000-0000-0000-000000000004}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1000001-0000-0000-0000-000000000001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1000001-0000-0000-0000-000000000001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1000001-0000-0000-0000-000000000001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1000001-0000-0000-0000-000000000001}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1000001-0000-0000-0000-000000000002}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1000001-0000-0000-0000-000000000002}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1000001-0000-0000-0000-000000000002}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1000001-0000-0000-0000-000000000002}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1000001-0000-0000-0000-000000000003}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1000001-0000-0000-0000-000000000003}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1000001-0000-0000-0000-000000000003}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1000001-0000-0000-0000-000000000003}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1000001-0000-0000-0000-000000000004}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1000001-0000-0000-0000-000000000004}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1000001-0000-0000-0000-000000000004}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1000001-0000-0000-0000-000000000004}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1000001-0000-0000-0000-000000000001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1000001-0000-0000-0000-000000000001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1000001-0000-0000-0000-000000000001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1000001-0000-0000-0000-000000000001}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1000001-0000-0000-0000-000000000002}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1000001-0000-0000-0000-000000000002}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1000001-0000-0000-0000-000000000002}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1000001-0000-0000-0000-000000000002}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1000001-0000-0000-0000-000000000003}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1000001-0000-0000-0000-000000000003}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1000001-0000-0000-0000-000000000003}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1000001-0000-0000-0000-000000000003}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1000001-0000-0000-0000-000000000004}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1000001-0000-0000-0000-000000000004}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1000001-0000-0000-0000-000000000004}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1000001-0000-0000-0000-000000000004}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1000001-0000-0000-0000-000000000001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1000001-0000-0000-0000-000000000001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1000001-0000-0000-0000-000000000001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1000001-0000-0000-0000-000000000001}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1000001-0000-0000-0000-000000000002}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1000001-0000-0000-0000-000000000002}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1000001-0000-0000-0000-000000000002}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1000001-0000-0000-0000-000000000002}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1000001-0000-0000-0000-000000000003}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1000001-0000-0000-0000-000000000003}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1000001-0000-0000-0000-000000000003}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1000001-0000-0000-0000-000000000003}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1000001-0000-0000-0000-000000000004}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1000001-0000-0000-0000-000000000004}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1000001-0000-0000-0000-000000000004}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1000001-0000-0000-0000-000000000004}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01000001-0000-0000-0000-000000000001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01000001-0000-0000-0000-000000000001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01000001-0000-0000-0000-000000000001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01000001-0000-0000-0000-000000000001}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A0000000-0000-0000-0000-000000000002} = {A0000000-0000-0000-0000-000000000001}
+		{A0000000-0000-0000-0000-000000000003} = {A0000000-0000-0000-0000-000000000001}
+		{A0000000-0000-0000-0000-000000000004} = {A0000000-0000-0000-0000-000000000003}
+		{A0000000-0000-0000-0000-000000000005} = {A0000000-0000-0000-0000-000000000003}
+		{A0000000-0000-0000-0000-000000000006} = {A0000000-0000-0000-0000-000000000003}
+		{A0000000-0000-0000-0000-000000000007} = {A0000000-0000-0000-0000-000000000003}
+		{A0000000-0000-0000-0000-000000000008} = {A0000000-0000-0000-0000-000000000003}
+		{B1000001-0000-0000-0000-000000000001} = {A0000000-0000-0000-0000-000000000002}
+		{B1000001-0000-0000-0000-000000000002} = {A0000000-0000-0000-0000-000000000002}
+		{B1000001-0000-0000-0000-000000000003} = {A0000000-0000-0000-0000-000000000002}
+		{B1000001-0000-0000-0000-000000000004} = {A0000000-0000-0000-0000-000000000002}
+		{C1000001-0000-0000-0000-000000000001} = {A0000000-0000-0000-0000-000000000004}
+		{C1000001-0000-0000-0000-000000000002} = {A0000000-0000-0000-0000-000000000004}
+		{C1000001-0000-0000-0000-000000000003} = {A0000000-0000-0000-0000-000000000004}
+		{C1000001-0000-0000-0000-000000000004} = {A0000000-0000-0000-0000-000000000004}
+		{D1000001-0000-0000-0000-000000000001} = {A0000000-0000-0000-0000-000000000005}
+		{D1000001-0000-0000-0000-000000000002} = {A0000000-0000-0000-0000-000000000005}
+		{D1000001-0000-0000-0000-000000000003} = {A0000000-0000-0000-0000-000000000005}
+		{D1000001-0000-0000-0000-000000000004} = {A0000000-0000-0000-0000-000000000005}
+		{E1000001-0000-0000-0000-000000000001} = {A0000000-0000-0000-0000-000000000006}
+		{E1000001-0000-0000-0000-000000000002} = {A0000000-0000-0000-0000-000000000006}
+		{E1000001-0000-0000-0000-000000000003} = {A0000000-0000-0000-0000-000000000006}
+		{E1000001-0000-0000-0000-000000000004} = {A0000000-0000-0000-0000-000000000006}
+		{F1000001-0000-0000-0000-000000000001} = {A0000000-0000-0000-0000-000000000007}
+		{F1000001-0000-0000-0000-000000000002} = {A0000000-0000-0000-0000-000000000007}
+		{F1000001-0000-0000-0000-000000000003} = {A0000000-0000-0000-0000-000000000007}
+		{F1000001-0000-0000-0000-000000000004} = {A0000000-0000-0000-0000-000000000007}
+		{01000001-0000-0000-0000-000000000001} = {A0000000-0000-0000-0000-000000000008}
+	EndGlobalSection
+EndGlobal

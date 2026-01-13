@@ -1,0 +1,115 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: openmind-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - openmind-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Order Placement Orchestrator (Central Saga Coordinator)
+  orchestrator:
+    build:
+      context: .
+      dockerfile: src/Services/Orchestrator/OpenMind.Orchestrator.Api/Dockerfile
+    container_name: openmind-orchestrator
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - MongoDB__ConnectionString=mongodb://mongodb:27017
+      - MongoDB__DatabaseName=OrchestratorDb
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - openmind-network
+
+  # Order Placement Service
+  order-placement:
+    build:
+      context: .
+      dockerfile: src/Services/OrderPlacement/OpenMind.OrderPlacement.Api/Dockerfile
+    container_name: openmind-order-placement
+    ports:
+      - "5001:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - MongoDB__ConnectionString=mongodb://mongodb:27017
+      - MongoDB__DatabaseName=OrderPlacementDb
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - openmind-network
+
+  # Payment Service
+  payment:
+    build:
+      context: .
+      dockerfile: src/Services/Payment/OpenMind.Payment.Api/Dockerfile
+    container_name: openmind-payment
+    ports:
+      - "5002:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - MongoDB__ConnectionString=mongodb://mongodb:27017
+      - MongoDB__DatabaseName=PaymentDb
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - openmind-network
+
+  # Fulfillment Service
+  fulfillment:
+    build:
+      context: .
+      dockerfile: src/Services/Fulfillment/OpenMind.Fulfillment.Api/Dockerfile
+    container_name: openmind-fulfillment
+    ports:
+      - "5003:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - MongoDB__ConnectionString=mongodb://mongodb:27017
+      - MongoDB__DatabaseName=FulfillmentDb
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - openmind-network
+
+  # Email Service
+  email:
+    build:
+      context: .
+      dockerfile: src/Services/Email/OpenMind.Email.Api/Dockerfile
+    container_name: openmind-email
+    ports:
+      - "5004:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - MongoDB__ConnectionString=mongodb://mongodb:27017
+      - MongoDB__DatabaseName=EmailDb
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - openmind-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  openmind-network:
+    driver: bridge

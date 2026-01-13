@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>OpenMind.Payment.Domain</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\OpenMind.BuildingBlocks.Domain\OpenMind.BuildingBlocks.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
