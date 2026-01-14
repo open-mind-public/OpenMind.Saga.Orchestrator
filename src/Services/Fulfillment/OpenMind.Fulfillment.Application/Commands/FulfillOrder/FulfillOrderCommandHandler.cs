@@ -40,24 +40,22 @@ public class FulfillOrderCommandHandler(IFulfillmentRepository fulfillmentReposi
                     IsBackOrdered = false
                 });
             }
-            else
-            {
-                var backOrderedItems = request.Items
-                    .Where(_ => Random.Shared.Next(100) < 50)
-                    .Select(i => i.ProductName)
-                    .ToList();
 
-                if (backOrderedItems.Count == 0)
-                    backOrderedItems.Add(request.Items.First().ProductName);
+            var backOrderedItems = request.Items
+                .Where(_ => Random.Shared.Next(100) < 50)
+                .Select(i => i.ProductName)
+                .ToList();
 
-                fulfillment.MarkAsBackOrdered($"Items out of stock: {string.Join(", ", backOrderedItems)}", request.CorrelationId);
+            if (backOrderedItems.Count == 0)
+                backOrderedItems.Add(request.Items.First().ProductName);
 
-                await fulfillmentRepository.AddAsync(fulfillment, cancellationToken);
+            fulfillment.MarkAsBackOrdered($"Items out of stock: {string.Join(", ", backOrderedItems)}", request.CorrelationId);
 
-                return CommandResult<FulfillOrderResult>.Failure(
-                    "Some items are out of stock",
-                    "OUT_OF_STOCK");
-            }
+            await fulfillmentRepository.AddAsync(fulfillment, cancellationToken);
+
+            return CommandResult<FulfillOrderResult>.Failure(
+                "Some items are out of stock",
+                "OUT_OF_STOCK");
         }
         catch (Exception ex)
         {

@@ -6,7 +6,8 @@ namespace OpenMind.Fulfillment.Infrastructure.Repositories;
 
 public class FulfillmentRepository : MongoRepository<Domain.Aggregates.Fulfillment, Guid>, IFulfillmentRepository
 {
-    public FulfillmentRepository(IMongoDatabase database) : base(database, "fulfillments")
+    public FulfillmentRepository(MongoDbContext dbContext) 
+        : base(dbContext, "fulfillments")
     {
     }
 

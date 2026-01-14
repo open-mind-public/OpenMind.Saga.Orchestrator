@@ -9,8 +9,8 @@ namespace OpenMind.Order.Infrastructure.Repositories;
 
 public class OrderRepository : MongoRepository<OrderAggregate, Guid>, IOrderRepository
 {
-    public OrderRepository(IMongoDatabase database)
-        : base(database, "orders")
+    public OrderRepository(MongoDbContext dbContext)
+        : base(dbContext, "orders")
     {
     }
 

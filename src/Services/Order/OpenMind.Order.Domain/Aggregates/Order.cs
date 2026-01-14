@@ -12,7 +12,9 @@ namespace OpenMind.Order.Domain.Aggregates;
 /// </summary>
 public class Order : AggregateRoot<Guid>
 {
-    private readonly List<OrderItem> _items = [];
+    // Use a property with private setter for MongoDB serialization
+    // The backing list is initialized in constructors and can be deserialized by MongoDB
+    public List<OrderItem> Items { get; private set; } = [];
 
     public CustomerId CustomerId { get; private set; }
     public OrderStatus Status { get; private set; }
@@ -21,7 +23,6 @@ public class Order : AggregateRoot<Guid>
     public string? CancellationReason { get; private set; }
     public string? PaymentTransactionId { get; private set; }
     public string? TrackingNumber { get; private set; }
-    public IReadOnlyCollection<OrderItem> Items => _items.AsReadOnly();
 
     private Order() : base()
     {
@@ -49,7 +50,7 @@ public class Order : AggregateRoot<Guid>
 
     public void AddItem(OrderItem item)
     {
-        _items.Add(item);
+        Items.Add(item);
         RecalculateTotal();
         Emit(new OrderItemAddedDomainEvent(Id, item.ProductId, item.Quantity));
     }
@@ -136,6 +137,6 @@ public class Order : AggregateRoot<Guid>
 
     private void RecalculateTotal()
     {
-        TotalAmount = _items.Aggregate(Money.Zero(), (total, item) => total.Add(item.TotalPrice));
+        TotalAmount = Items.Aggregate(Money.Zero(), (total, item) => total.Add(item.TotalPrice));
     }
 }

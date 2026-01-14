@@ -7,7 +7,8 @@ namespace OpenMind.Fulfillment.Domain.Aggregates;
 
 public class Fulfillment : AggregateRoot<Guid>
 {
-    private readonly List<FulfillmentItem> _items = [];
+    // Use a property with private setter for MongoDB serialization
+    public List<FulfillmentItem> Items { get; private set; } = [];
 
     public Guid OrderId { get; private set; }
     public Guid CustomerId { get; private set; }
@@ -16,7 +17,6 @@ public class Fulfillment : AggregateRoot<Guid>
     public string? TrackingNumber { get; private set; }
     public DateTime? EstimatedDelivery { get; private set; }
     public string? FailureReason { get; private set; }
-    public IReadOnlyCollection<FulfillmentItem> Items => _items.AsReadOnly();
 
     private Fulfillment() : base()
     {
@@ -44,7 +44,7 @@ public class Fulfillment : AggregateRoot<Guid>
 
     public void AddItem(Guid productId, string productName, int quantity)
     {
-        _items.Add(new FulfillmentItem(productId, productName, quantity));
+        Items.Add(new FulfillmentItem(productId, productName, quantity));
     }
 
     public void MarkAsProcessing()
@@ -95,4 +95,32 @@ public class Fulfillment : AggregateRoot<Guid>
     }
 }
 
-public record FulfillmentItem(Guid ProductId, string ProductName, int Quantity);
+/// <summary>
+/// Represents an item in a fulfillment (Value Object).
+/// </summary>
+public class FulfillmentItem : ValueObject
+{
+    public Guid ProductId { get; private set; }
+    public string ProductName { get; private set; }
+    public int Quantity { get; private set; }
+
+    // Parameterless constructor for MongoDB deserialization
+    private FulfillmentItem()
+    {
+        ProductName = string.Empty;
+    }
+
+    public FulfillmentItem(Guid productId, string productName, int quantity)
+    {
+        ProductId = productId;
+        ProductName = productName;
+        Quantity = quantity;
+    }
+
+    protected override IEnumerable<object?> GetEqualityComponents()
+    {
+        yield return ProductId;
+        yield return ProductName;
+        yield return Quantity;
+    }
+}

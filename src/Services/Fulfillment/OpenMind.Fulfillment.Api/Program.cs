@@ -35,6 +35,9 @@ var mongoSettings = builder.Configuration.GetSection("MongoDB").Get<MongoDbSetti
 builder.Services.AddSingleton<IMongoClient>(_ => new MongoClient(mongoSettings.ConnectionString));
 builder.Services.AddScoped(sp => sp.GetRequiredService<IMongoClient>().GetDatabase(mongoSettings.DatabaseName));
 
+// MongoDbContext - handles domain event dispatching
+builder.Services.AddScoped<MongoDbContext>();
+
 // Repositories
 builder.Services.AddScoped<IFulfillmentRepository, FulfillmentRepository>();
 
@@ -44,6 +47,7 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(FulfillOrderCommandHandler).Assembly);
     cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
     cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(DomainEventDispatchBehavior<,>));
 });
 
 builder.Services.AddValidatorsFromAssembly(typeof(FulfillOrderCommandHandler).Assembly);

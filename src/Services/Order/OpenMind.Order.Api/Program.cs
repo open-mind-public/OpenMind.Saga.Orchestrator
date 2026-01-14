@@ -38,6 +38,9 @@ builder.Services.AddSingleton<IMongoClient>(_ =>
 builder.Services.AddScoped(sp =>
     sp.GetRequiredService<IMongoClient>().GetDatabase(mongoSettings.DatabaseName));
 
+// MongoDbContext - handles domain event dispatching
+builder.Services.AddScoped<MongoDbContext>();
+
 // Repositories
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
@@ -47,6 +50,7 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(CreateOrderCommandHandler).Assembly);
     cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
     cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(DomainEventDispatchBehavior<,>));
 });
 
 // FluentValidation
