@@ -1,12 +1,13 @@
 using MassTransit;
 using OpenMind.Email.IntegrationEvents.Commands;
+using OpenMind.Email.IntegrationEvents.Events;
 
 namespace OpenMind.Email.Api.Features.SendOrderCancelledEmail;
 
 public class SendOrderCancelledEmailConsumer(ILogger<SendOrderCancelledEmailConsumer> logger)
     : IConsumer<SendOrderCancelledEmailCommand>
 {
-    public Task Consume(ConsumeContext<SendOrderCancelledEmailCommand> context)
+    public async Task Consume(ConsumeContext<SendOrderCancelledEmailCommand> context)
     {
         var message = context.Message;
         
@@ -37,16 +38,32 @@ public class SendOrderCancelledEmailConsumer(ILogger<SendOrderCancelledEmailCons
                 "Email sent successfully to {Email} for Order {OrderId}",
                 message.CustomerEmail,
                 message.OrderId);
+
+            await context.Publish(new EmailSentEvent
+            {
+                OrderId = message.OrderId,
+                EmailType = "OrderCancelled",
+                RecipientEmail = message.CustomerEmail,
+                CorrelationId = message.CorrelationId
+            });
         }
         else
         {
+            var reason = "SMTP server temporarily unavailable";
             logger.LogWarning(
-                "Failed to send email to {Email} for Order {OrderId}: SMTP server temporarily unavailable",
+                "Failed to send email to {Email} for Order {OrderId}: {Reason}",
                 message.CustomerEmail,
-                message.OrderId);
-        }
+                message.OrderId,
+                reason);
 
-        return Task.CompletedTask;
+            await context.Publish(new EmailFailedEvent
+            {
+                OrderId = message.OrderId,
+                EmailType = "OrderCancelled",
+                Reason = reason,
+                CorrelationId = message.CorrelationId
+            });
+        }
     }
 }
 
