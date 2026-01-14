@@ -7,8 +7,14 @@ namespace OpenMind.Order.Domain.ValueObjects;
 /// </summary>
 public sealed class Money : ValueObject
 {
-    public decimal Amount { get; }
-    public string Currency { get; }
+    public decimal Amount { get; private set; }
+    public string Currency { get; private set; }
+
+    // Required for MongoDB deserialization
+    private Money()
+    {
+        Currency = "USD";
+    }
 
     private Money(decimal amount, string currency)
     {

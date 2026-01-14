@@ -5,7 +5,7 @@ namespace OpenMind.Fulfillment.IntegrationEvents.Events;
 /// <summary>
 /// Event indicating item is on backorder.
 /// </summary>
-public record ItemBackorderedEvent : IntegrationEvent
+public record ItemBackorderedEvent : IntegrationEvent, IFulfillmentEvent
 {
     public Guid OrderId { get; init; }
     public Guid FulfillmentId { get; init; }

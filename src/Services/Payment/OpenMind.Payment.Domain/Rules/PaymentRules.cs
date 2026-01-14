@@ -6,7 +6,7 @@ namespace OpenMind.Payment.Domain.Rules;
 public class PaymentMustBeInStatusRule(PaymentStatus currentStatus, PaymentStatus requiredStatus, string operation)
     : IBusinessRule
 {
-    public bool IsBroken() => currentStatus != requiredStatus;
+    public bool IsBroken() => !Equals(currentStatus, requiredStatus);
 
     public string Message => $"Cannot {operation} payment in {currentStatus} status. Required status: {requiredStatus}";
 }

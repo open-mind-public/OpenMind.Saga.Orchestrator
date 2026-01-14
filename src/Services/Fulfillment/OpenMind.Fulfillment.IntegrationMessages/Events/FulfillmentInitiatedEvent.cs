@@ -5,7 +5,7 @@ namespace OpenMind.Fulfillment.IntegrationEvents.Events;
 /// <summary>
 /// Event indicating fulfillment was initiated.
 /// </summary>
-public record FulfillmentInitiatedEvent : IntegrationEvent
+public record FulfillmentInitiatedEvent : IntegrationEvent, IFulfillmentEvent
 {
     public Guid OrderId { get; init; }
     public Guid FulfillmentId { get; init; }

@@ -7,9 +7,12 @@ using OpenMind.Fulfillment.Application.Commands.FulfillOrder;
 using OpenMind.Fulfillment.Application.IntegrationCommandHandlers;
 using OpenMind.Fulfillment.Domain.Repositories;
 using OpenMind.Fulfillment.Infrastructure.Repositories;
+using OpenMind.Fulfillment.IntegrationEvents.Commands;
+using OpenMind.Fulfillment.IntegrationEvents.Events;
 using OpenMind.Shared.Application.Behaviors;
 using OpenMind.Shared.MongoDb;
 using Serilog;
+using FulfillOrderCommand = OpenMind.Fulfillment.IntegrationEvents.Commands.FulfillOrderCommand;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,7 +48,7 @@ builder.Services.AddMediatR(cfg =>
 
 builder.Services.AddValidatorsFromAssembly(typeof(FulfillOrderCommandHandler).Assembly);
 
-// MassTransit with Amazon SQS/SNS
+// MassTransit with Amazon SQS/SNS (Fan-out pattern)
 var awsServiceUrl = builder.Configuration["AWS:ServiceURL"] ?? "http://localhost:4566";
 var awsRegion = builder.Configuration["AWS:Region"] ?? "us-east-1";
 
@@ -64,7 +67,25 @@ builder.Services.AddMassTransit(x =>
             h.Config(new Amazon.SimpleNotificationService.AmazonSimpleNotificationServiceConfig { ServiceURL = awsServiceUrl });
         });
 
-        cfg.ConfigureEndpoints(context);
+        // Configure fan-out pattern: all fulfillment commands → fulfillment-commands topic
+        cfg.Message<FulfillOrderCommand>(m => m.SetEntityName("fulfillment-commands"));
+        cfg.Message<CancelFulfillmentCommand>(m => m.SetEntityName("fulfillment-commands"));
+
+        // Configure fan-out pattern: all fulfillment events → fulfillment-events topic
+        cfg.Message<OrderShippedEvent>(m => m.SetEntityName("fulfillment-events"));
+        cfg.Message<FulfillmentFailedEvent>(m => m.SetEntityName("fulfillment-events"));
+        cfg.Message<FulfillmentCancelledEvent>(m => m.SetEntityName("fulfillment-events"));
+        cfg.Message<FulfillmentInitiatedEvent>(m => m.SetEntityName("fulfillment-events"));
+        cfg.Message<ItemBackorderedEvent>(m => m.SetEntityName("fulfillment-events"));
+
+        // SQS queue for fulfillment-commands topic
+        cfg.ReceiveEndpoint("fulfillment-service-commands", e =>
+        {
+            e.ConfigureConsumeTopology = false;
+            e.Subscribe("fulfillment-commands", _ => { });
+            e.ConfigureConsumer<FulfillOrderCommandConsumer>(context);
+            e.ConfigureConsumer<CancelFulfillmentCommandConsumer>(context);
+        });
     });
 });
 

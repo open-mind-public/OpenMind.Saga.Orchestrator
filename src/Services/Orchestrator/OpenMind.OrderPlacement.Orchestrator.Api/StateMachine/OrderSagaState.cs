@@ -1,4 +1,5 @@
 using MassTransit;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace OpenMind.OrderPlacement.Orchestrator.Api.StateMachine;
 
@@ -8,7 +9,8 @@ namespace OpenMind.OrderPlacement.Orchestrator.Api.StateMachine;
 /// </summary>
 public class OrderSagaState : SagaStateMachineInstance, ISagaVersion
 {
-    // MassTransit required property
+    // MassTransit required property - mapped to MongoDB _id field
+    [BsonId]
     public Guid CorrelationId { get; set; }
 
     // ISagaVersion implementation for MongoDB repository

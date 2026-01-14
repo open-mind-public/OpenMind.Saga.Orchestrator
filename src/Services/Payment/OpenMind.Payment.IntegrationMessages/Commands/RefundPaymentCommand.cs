@@ -5,7 +5,7 @@ namespace OpenMind.Payment.IntegrationEvents.Commands;
 /// <summary>
 /// Command to refund payment.
 /// </summary>
-public record RefundPaymentCommand : IntegrationCommand
+public record RefundPaymentCommand : IntegrationCommand, IPaymentCommand
 {
     public Guid OrderId { get; init; }
     public Guid PaymentId { get; init; }

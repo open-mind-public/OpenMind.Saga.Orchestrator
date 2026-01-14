@@ -1,0 +1,7 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "dotnet clean": true,
+        "docker exec": true,
+        "docker ps": true
+    }
+}

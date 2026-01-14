@@ -12,20 +12,29 @@ namespace OpenMind.Order.Application.IntegrationCommandHandlers;
 /// Consumer for ValidateOrderCommand from the orchestrator.
 /// Validates that an order exists and returns its details.
 /// </summary>
-public class ValidateOrderCommandConsumer(IMediator mediator, IPublishEndpoint publishEndpoint, ILogger<ValidateOrderCommandConsumer> logger)
+public class ValidateOrderCommandConsumer(IMediator mediator, ILogger<ValidateOrderCommandConsumer> logger)
     : IConsumer<ValidateOrderCommand>
 {
     public async Task Consume(ConsumeContext<ValidateOrderCommand> context)
     {
+        // Debug: Log incoming message details
+        logger.LogDebug("[Order] Received ValidateOrderCommand - OrderId: {OrderId}, Message.CorrelationId: {MessageCorrelationId}, Header.CorrelationId: {HeaderCorrelationId}",
+            context.Message.OrderId,
+            context.Message.CorrelationId,
+            context.CorrelationId);
+
         var query = new GetOrderQuery(context.Message.OrderId);
         var result = await mediator.Send(query);
 
         if (result.IsSuccess && result.Data is not null)
         {
             var order = result.Data;
-            await publishEndpoint.Publish(new OrderValidatedEvent
+            // Use context.CorrelationId (header) to ensure proper saga correlation
+            var correlationId = context.CorrelationId ?? context.Message.CorrelationId;
+            
+            await context.Publish(new OrderValidatedEvent
             {
-                CorrelationId = context.Message.CorrelationId,
+                CorrelationId = correlationId,
                 OrderId = order.Id,
                 CustomerId = order.CustomerId,
                 TotalAmount = order.TotalAmount,
@@ -41,18 +50,21 @@ public class ValidateOrderCommandConsumer(IMediator mediator, IPublishEndpoint p
                 }).ToList()
             });
 
-            logger.LogInformation("[Order] Published OrderValidatedEvent - OrderId: {OrderId}, CorrelationId: {CorrelationId}", order.Id, context.Message.CorrelationId);
+            logger.LogInformation("[Order] Published OrderValidatedEvent - OrderId: {OrderId}, CorrelationId: {CorrelationId}", order.Id, correlationId);
         }
         else
         {
-            await publishEndpoint.Publish(new OrderValidationFailedEvent
+            // Use context.CorrelationId (header) to ensure proper saga correlation
+            var correlationId = context.CorrelationId ?? context.Message.CorrelationId;
+            
+            await context.Publish(new OrderValidationFailedEvent
             {
-                CorrelationId = context.Message.CorrelationId,
+                CorrelationId = correlationId,
                 OrderId = context.Message.OrderId,
                 Reason = result.ErrorMessage ?? "Order not found"
             });
 
-            logger.LogWarning("[Order] Published OrderValidationFailedEvent - OrderId: {OrderId}, Reason: {Reason}, CorrelationId: {CorrelationId}", context.Message.OrderId, result.ErrorMessage ?? "Order not found", context.Message.CorrelationId);
+            logger.LogWarning("[Order] Published OrderValidationFailedEvent - OrderId: {OrderId}, Reason: {Reason}, CorrelationId: {CorrelationId}", context.Message.OrderId, result.ErrorMessage ?? "Order not found", correlationId);
         }
     }
 }

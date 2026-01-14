@@ -5,7 +5,7 @@ namespace OpenMind.Fulfillment.IntegrationEvents.Commands;
 /// <summary>
 /// Command to fulfill an order (async call - shipping).
 /// </summary>
-public record FulfillOrderCommand : IntegrationCommand
+public record FulfillOrderCommand : IntegrationCommand, IFulfillmentCommand
 {
     public Guid OrderId { get; init; }
     public Guid CustomerId { get; init; }

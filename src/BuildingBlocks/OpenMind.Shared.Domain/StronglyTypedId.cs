@@ -7,7 +7,13 @@ namespace OpenMind.Shared.Domain;
 public abstract class StronglyTypedId<T> : ValueObject
     where T : StronglyTypedId<T>
 {
-    public Guid Value { get; }
+    public Guid Value { get; protected set; }
+
+    // Required for MongoDB deserialization
+    protected StronglyTypedId()
+    {
+        Value = Guid.Empty;
+    }
 
     protected StronglyTypedId(Guid value)
     {

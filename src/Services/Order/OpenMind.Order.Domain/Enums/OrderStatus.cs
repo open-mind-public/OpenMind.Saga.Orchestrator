@@ -18,5 +18,8 @@ public sealed class OrderStatus : Enumeration
     public static readonly OrderStatus Refunded = new(9, nameof(Refunded));
     public static readonly OrderStatus BackOrdered = new(10, nameof(BackOrdered));
 
+    // Required for MongoDB deserialization
+    private OrderStatus() : base() { }
+
     private OrderStatus(int id, string name) : base(id, name) { }
 }

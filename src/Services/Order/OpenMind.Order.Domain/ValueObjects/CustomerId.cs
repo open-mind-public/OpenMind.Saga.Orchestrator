@@ -7,6 +7,9 @@ namespace OpenMind.Order.Domain.ValueObjects;
 /// </summary>
 public sealed class CustomerId : StronglyTypedId<CustomerId>
 {
+    // Required for MongoDB deserialization
+    private CustomerId() : base() { }
+
     public CustomerId(Guid value) : base(value) { }
 
     public static CustomerId Create() => new(Guid.NewGuid());

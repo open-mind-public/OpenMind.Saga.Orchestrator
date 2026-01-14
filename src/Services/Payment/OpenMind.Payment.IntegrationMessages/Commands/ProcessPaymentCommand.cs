@@ -5,7 +5,7 @@ namespace OpenMind.Payment.IntegrationEvents.Commands;
 /// <summary>
 /// Command to process payment for an order.
 /// </summary>
-public record ProcessPaymentCommand : IntegrationCommand
+public record ProcessPaymentCommand : IntegrationCommand, IPaymentCommand
 {
     public Guid OrderId { get; init; }
     public Guid CustomerId { get; init; }

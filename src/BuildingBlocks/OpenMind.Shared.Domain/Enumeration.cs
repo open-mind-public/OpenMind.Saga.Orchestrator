@@ -6,8 +6,14 @@ namespace OpenMind.Shared.Domain;
 /// </summary>
 public abstract class Enumeration : IComparable
 {
-    public int Id { get; }
-    public string Name { get; }
+    public int Id { get; protected set; }
+    public string Name { get; protected set; }
+
+    // Required for MongoDB deserialization
+    protected Enumeration()
+    {
+        Name = string.Empty;
+    }
 
     protected Enumeration(int id, string name)
     {

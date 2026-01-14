@@ -5,7 +5,7 @@ namespace OpenMind.Email.IntegrationEvents.Commands;
 /// <summary>
 /// Command to send backorder notification email.
 /// </summary>
-public record SendBackorderEmailCommand : IntegrationCommand
+public record SendBackorderEmailCommand : IntegrationCommand, IEmailCommand
 {
     public Guid OrderId { get; init; }
     public Guid CustomerId { get; init; }

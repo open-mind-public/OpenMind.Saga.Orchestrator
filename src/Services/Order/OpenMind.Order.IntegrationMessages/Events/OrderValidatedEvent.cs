@@ -6,7 +6,7 @@ namespace OpenMind.Order.IntegrationEvents.Events;
 /// Event indicating order was validated and ready for placement.
 /// Contains order details retrieved from the Order Service.
 /// </summary>
-public record OrderValidatedEvent : IntegrationEvent
+public record OrderValidatedEvent : IntegrationEvent, IOrderEvent
 {
     public Guid OrderId { get; init; }
     public Guid CustomerId { get; init; }

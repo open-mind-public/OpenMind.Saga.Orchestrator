@@ -5,7 +5,7 @@ namespace OpenMind.Email.IntegrationEvents.Commands;
 /// <summary>
 /// Command to send refund confirmation email.
 /// </summary>
-public record SendRefundEmailCommand : IntegrationCommand
+public record SendRefundEmailCommand : IntegrationCommand, IEmailCommand
 {
     public Guid OrderId { get; init; }
     public Guid CustomerId { get; init; }

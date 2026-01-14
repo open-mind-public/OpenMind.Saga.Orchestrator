@@ -7,6 +7,8 @@ using OpenMind.Order.Application.Commands.CreateOrder;
 using OpenMind.Order.Application.IntegrationCommandHandlers;
 using OpenMind.Order.Domain.Repositories;
 using OpenMind.Order.Infrastructure.Repositories;
+using OpenMind.Order.IntegrationEvents.Commands;
+using OpenMind.Order.IntegrationEvents.Events;
 using OpenMind.Shared.Application.Behaviors;
 using OpenMind.Shared.MongoDb;
 using Serilog;
@@ -50,7 +52,7 @@ builder.Services.AddMediatR(cfg =>
 // FluentValidation
 builder.Services.AddValidatorsFromAssembly(typeof(CreateOrderCommandValidator).Assembly);
 
-// MassTransit with Amazon SQS/SNS
+// MassTransit with Amazon SQS/SNS (Fan-out pattern)
 var awsServiceUrl = builder.Configuration["AWS:ServiceURL"] ?? "http://localhost:4566";
 var awsRegion = builder.Configuration["AWS:Region"] ?? "us-east-1";
 
@@ -73,7 +75,35 @@ builder.Services.AddMassTransit(x =>
             h.Config(new Amazon.SimpleNotificationService.AmazonSimpleNotificationServiceConfig { ServiceURL = awsServiceUrl });
         });
 
-        cfg.ConfigureEndpoints(context);
+        // Configure fan-out pattern: all order commands → order-commands topic
+        cfg.Message<ValidateOrderCommand>(m => m.SetEntityName("order-commands"));
+        cfg.Message<MarkOrderAsPaymentCompletedCommand>(m => m.SetEntityName("order-commands"));
+        cfg.Message<MarkOrderAsPaymentFailedCommand>(m => m.SetEntityName("order-commands"));
+        cfg.Message<MarkOrderAsShippedCommand>(m => m.SetEntityName("order-commands"));
+        cfg.Message<MarkOrderAsBackOrderedCommand>(m => m.SetEntityName("order-commands"));
+        cfg.Message<CancelOrderCommand>(m => m.SetEntityName("order-commands"));
+
+        // Configure fan-out pattern: all order events → order-events topic
+        cfg.Message<OrderValidatedEvent>(m => m.SetEntityName("order-events"));
+        cfg.Message<OrderValidationFailedEvent>(m => m.SetEntityName("order-events"));
+        cfg.Message<OrderPaymentCompletedEvent>(m => m.SetEntityName("order-events"));
+        cfg.Message<OrderPaymentFailedEvent>(m => m.SetEntityName("order-events"));
+        cfg.Message<OrderMarkedAsShippedEvent>(m => m.SetEntityName("order-events"));
+        cfg.Message<OrderBackOrderedEvent>(m => m.SetEntityName("order-events"));
+        cfg.Message<OrderCancelledEvent>(m => m.SetEntityName("order-events"));
+
+        // SQS queue for order-commands topic
+        cfg.ReceiveEndpoint("order-service-commands", e =>
+        {
+            e.ConfigureConsumeTopology = false;
+            e.Subscribe("order-commands", _ => { });
+            e.ConfigureConsumer<ValidateOrderCommandConsumer>(context);
+            e.ConfigureConsumer<MarkOrderAsPaymentCompletedCommandConsumer>(context);
+            e.ConfigureConsumer<MarkOrderAsPaymentFailedCommandConsumer>(context);
+            e.ConfigureConsumer<MarkOrderAsShippedCommandConsumer>(context);
+            e.ConfigureConsumer<MarkOrderAsBackOrderedCommandConsumer>(context);
+            e.ConfigureConsumer<CancelOrderCommandConsumer>(context);
+        });
     });
 });
 

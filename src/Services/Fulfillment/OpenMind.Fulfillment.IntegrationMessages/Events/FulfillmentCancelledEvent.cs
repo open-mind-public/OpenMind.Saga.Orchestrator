@@ -5,7 +5,7 @@ namespace OpenMind.Fulfillment.IntegrationEvents.Events;
 /// <summary>
 /// Event indicating fulfillment was cancelled.
 /// </summary>
-public record FulfillmentCancelledEvent : IntegrationEvent
+public record FulfillmentCancelledEvent : IntegrationEvent, IFulfillmentEvent
 {
     public Guid OrderId { get; init; }
     public Guid FulfillmentId { get; init; }

@@ -5,7 +5,7 @@ namespace OpenMind.Email.IntegrationEvents.Commands;
 /// <summary>
 /// Command to send payment failure notification email.
 /// </summary>
-public record SendPaymentFailedEmailCommand : IntegrationCommand
+public record SendPaymentFailedEmailCommand : IntegrationCommand, IEmailCommand
 {
     public Guid OrderId { get; init; }
     public Guid CustomerId { get; init; }

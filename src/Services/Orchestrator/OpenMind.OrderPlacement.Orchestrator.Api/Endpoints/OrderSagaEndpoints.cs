@@ -1,5 +1,6 @@
 using MassTransit;
 using MongoDB.Driver;
+using OpenMind.Order.IntegrationEvents.Commands;
 using OpenMind.OrderPlacement.Orchestrator.Api.StateMachine;
 
 namespace OpenMind.OrderPlacement.Orchestrator.Api.Endpoints;

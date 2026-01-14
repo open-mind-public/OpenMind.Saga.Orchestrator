@@ -12,5 +12,8 @@ public sealed class FulfillmentStatus : Enumeration
     public static readonly FulfillmentStatus Cancelled = new(6, nameof(Cancelled));
     public static readonly FulfillmentStatus Failed = new(7, nameof(Failed));
 
+    // Required for MongoDB deserialization
+    private FulfillmentStatus() : base() { }
+
     private FulfillmentStatus(int id, string name) : base(id, name) { }
 }

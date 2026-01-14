@@ -74,20 +74,58 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
         InstanceState(x => x.CurrentState);
 
         // Configure event correlation
+        // PlaceOrderCommand creates saga with CorrelationId = OrderId
         Event(() => PlaceOrder, e => e.CorrelateById(context => context.Message.OrderId));
 
-        Event(() => OrderValidated, e => e.CorrelateById(context => context.Message.CorrelationId));
-        Event(() => OrderValidationFailed, e => e.CorrelateById(context => context.Message.CorrelationId));
+        // All response events correlate by OrderId (which matches the saga's CorrelationId)
+        Event(() => OrderValidated, e =>
+        {
+            e.CorrelateById(context => context.Message.OrderId);
+            e.OnMissingInstance(m => m.Redeliver(r => r.Interval(5, TimeSpan.FromSeconds(2))));
+        });
+        Event(() => OrderValidationFailed, e =>
+        {
+            e.CorrelateById(context => context.Message.OrderId);
+            e.OnMissingInstance(m => m.Redeliver(r => r.Interval(5, TimeSpan.FromSeconds(2))));
+        });
 
-        Event(() => PaymentCompleted, e => e.CorrelateById(context => context.Message.CorrelationId));
-        Event(() => PaymentFailed, e => e.CorrelateById(context => context.Message.CorrelationId));
-        Event(() => PaymentRefunded, e => e.CorrelateById(context => context.Message.CorrelationId));
+        Event(() => PaymentCompleted, e =>
+        {
+            e.CorrelateById(context => context.Message.OrderId);
+            e.OnMissingInstance(m => m.Redeliver(r => r.Interval(5, TimeSpan.FromSeconds(2))));
+        });
+        Event(() => PaymentFailed, e =>
+        {
+            e.CorrelateById(context => context.Message.OrderId);
+            e.OnMissingInstance(m => m.Redeliver(r => r.Interval(5, TimeSpan.FromSeconds(2))));
+        });
+        Event(() => PaymentRefunded, e =>
+        {
+            e.CorrelateById(context => context.Message.OrderId);
+            e.OnMissingInstance(m => m.Redeliver(r => r.Interval(5, TimeSpan.FromSeconds(2))));
+        });
 
-        Event(() => OrderShipped, e => e.CorrelateById(context => context.Message.CorrelationId));
-        Event(() => FulfillmentFailed, e => e.CorrelateById(context => context.Message.CorrelationId));
+        Event(() => OrderShipped, e =>
+        {
+            e.CorrelateById(context => context.Message.OrderId);
+            e.OnMissingInstance(m => m.Redeliver(r => r.Interval(5, TimeSpan.FromSeconds(2))));
+        });
+        Event(() => FulfillmentFailed, e =>
+        {
+            e.CorrelateById(context => context.Message.OrderId);
+            e.OnMissingInstance(m => m.Redeliver(r => r.Interval(5, TimeSpan.FromSeconds(2))));
+        });
 
-        Event(() => EmailSent, e => e.CorrelateById(context => context.Message.CorrelationId));
-        Event(() => EmailFailed, e => e.CorrelateById(context => context.Message.CorrelationId));
+        Event(() => EmailSent, e =>
+        {
+            e.CorrelateById(context => context.Message.OrderId);
+            e.OnMissingInstance(m => m.Redeliver(r => r.Interval(5, TimeSpan.FromSeconds(2))));
+        });
+        Event(() => EmailFailed, e =>
+        {
+            e.CorrelateById(context => context.Message.OrderId);
+            e.OnMissingInstance(m => m.Redeliver(r => r.Interval(5, TimeSpan.FromSeconds(2))));
+        });
 
         // Define the state machine workflow
         Initially(
@@ -527,18 +565,6 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
         // Final states
         SetCompletedWhenFinalized();
     }
-}
-
-/// <summary>
-/// Command to initiate the order placement saga.
-/// The order must already exist in the Order Service.
-/// </summary>
-public record PlaceOrderCommand
-{
-    /// <summary>
-    /// The ID of an existing order to be placed.
-    /// </summary>
-    public Guid OrderId { get; init; }
 }
 
 public record FulfillmentItemDto

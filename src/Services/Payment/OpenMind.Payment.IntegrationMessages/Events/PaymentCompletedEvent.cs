@@ -5,7 +5,7 @@ namespace OpenMind.Payment.IntegrationEvents.Events;
 /// <summary>
 /// Event indicating payment was successfully processed.
 /// </summary>
-public record PaymentCompletedEvent : IntegrationEvent
+public record PaymentCompletedEvent : IntegrationEvent, IPaymentEvent
 {
     public Guid OrderId { get; init; }
     public Guid PaymentId { get; init; }

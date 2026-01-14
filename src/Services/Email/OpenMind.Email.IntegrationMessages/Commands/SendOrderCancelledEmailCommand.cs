@@ -5,7 +5,7 @@ namespace OpenMind.Email.IntegrationEvents.Commands;
 /// <summary>
 /// Command to send order cancellation email.
 /// </summary>
-public record SendOrderCancelledEmailCommand : IntegrationCommand
+public record SendOrderCancelledEmailCommand : IntegrationCommand, IEmailCommand
 {
     public Guid OrderId { get; init; }
     public Guid CustomerId { get; init; }

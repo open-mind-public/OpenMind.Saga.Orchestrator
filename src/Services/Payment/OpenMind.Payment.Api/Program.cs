@@ -7,9 +7,12 @@ using OpenMind.Payment.Application.Commands.ProcessPayment;
 using OpenMind.Payment.Application.IntegrationCommandHandlers;
 using OpenMind.Payment.Domain.Repositories;
 using OpenMind.Payment.Infrastructure.Repositories;
+using OpenMind.Payment.IntegrationEvents.Commands;
+using OpenMind.Payment.IntegrationEvents.Events;
 using OpenMind.Shared.Application.Behaviors;
 using OpenMind.Shared.MongoDb;
 using Serilog;
+using ProcessPaymentCommand = OpenMind.Payment.IntegrationEvents.Commands.ProcessPaymentCommand;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,7 +52,7 @@ builder.Services.AddMediatR(cfg =>
 
 builder.Services.AddValidatorsFromAssembly(typeof(ProcessPaymentCommandHandler).Assembly);
 
-// MassTransit with Amazon SQS/SNS
+// MassTransit with Amazon SQS/SNS (Fan-out pattern)
 var awsServiceUrl = builder.Configuration["AWS:ServiceURL"] ?? "http://localhost:4566";
 var awsRegion = builder.Configuration["AWS:Region"] ?? "us-east-1";
 
@@ -68,7 +71,24 @@ builder.Services.AddMassTransit(x =>
             h.Config(new Amazon.SimpleNotificationService.AmazonSimpleNotificationServiceConfig { ServiceURL = awsServiceUrl });
         });
 
-        cfg.ConfigureEndpoints(context);
+        // Configure fan-out pattern: all payment commands → payment-commands topic
+        cfg.Message<ProcessPaymentCommand>(m => m.SetEntityName("payment-commands"));
+        cfg.Message<RefundPaymentCommand>(m => m.SetEntityName("payment-commands"));
+
+        // Configure fan-out pattern: all payment events → payment-events topic
+        cfg.Message<PaymentCompletedEvent>(m => m.SetEntityName("payment-events"));
+        cfg.Message<PaymentFailedEvent>(m => m.SetEntityName("payment-events"));
+        cfg.Message<PaymentRefundedEvent>(m => m.SetEntityName("payment-events"));
+        cfg.Message<PaymentRefundFailedEvent>(m => m.SetEntityName("payment-events"));
+
+        // SQS queue for payment-commands topic
+        cfg.ReceiveEndpoint("payment-service-commands", e =>
+        {
+            e.ConfigureConsumeTopology = false;
+            e.Subscribe("payment-commands", _ => { });
+            e.ConfigureConsumer<ProcessPaymentCommandConsumer>(context);
+            e.ConfigureConsumer<RefundPaymentCommandConsumer>(context);
+        });
     });
 });
 

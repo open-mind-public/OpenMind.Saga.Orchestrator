@@ -5,7 +5,7 @@ namespace OpenMind.Order.IntegrationEvents.Commands;
 /// <summary>
 /// Command to cancel an order.
 /// </summary>
-public record CancelOrderCommand : IntegrationCommand
+public record CancelOrderCommand : IntegrationCommand, IOrderCommand
 {
     public Guid OrderId { get; init; }
     public string Reason { get; init; } = string.Empty;
