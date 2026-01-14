@@ -44,12 +44,9 @@ public class PaymentProcessingStartedDomainEventHandler(IMediator mediator)
 
     private static bool SimulatePaymentGateway(string cardNumber, string expiry)
     {
-        // Simulate card validation
-        // Cards ending in 0000 are declined (for testing)
         if (cardNumber.EndsWith("0000"))
             return false;
 
-        // Check expiry (simplified check)
         if (!string.IsNullOrEmpty(expiry))
         {
             var parts = expiry.Split('/');

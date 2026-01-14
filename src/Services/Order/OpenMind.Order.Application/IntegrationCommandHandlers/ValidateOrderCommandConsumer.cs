@@ -17,19 +17,12 @@ public class ValidateOrderCommandConsumer(IMediator mediator, ILogger<ValidateOr
 {
     public async Task Consume(ConsumeContext<ValidateOrderCommand> context)
     {
-        // Debug: Log incoming message details
-        logger.LogDebug("[Order] Received ValidateOrderCommand - OrderId: {OrderId}, Message.CorrelationId: {MessageCorrelationId}, Header.CorrelationId: {HeaderCorrelationId}",
-            context.Message.OrderId,
-            context.Message.CorrelationId,
-            context.CorrelationId);
-
         var query = new GetOrderQuery(context.Message.OrderId);
         var result = await mediator.Send(query);
 
         if (result.IsSuccess && result.Data is not null)
         {
             var order = result.Data;
-            // Use context.CorrelationId (header) to ensure proper saga correlation
             var correlationId = context.CorrelationId ?? context.Message.CorrelationId;
             
             await context.Publish(new OrderValidatedEvent
@@ -54,7 +47,6 @@ public class ValidateOrderCommandConsumer(IMediator mediator, ILogger<ValidateOr
         }
         else
         {
-            // Use context.CorrelationId (header) to ensure proper saga correlation
             var correlationId = context.CorrelationId ?? context.Message.CorrelationId;
             
             await context.Publish(new OrderValidationFailedEvent
