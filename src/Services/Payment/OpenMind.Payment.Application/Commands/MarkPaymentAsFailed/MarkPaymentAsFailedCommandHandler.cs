@@ -1,9 +1,10 @@
+using Microsoft.Extensions.Logging;
 using OpenMind.Payment.Domain.Repositories;
 using OpenMind.Shared.Application.Commands;
 
 namespace OpenMind.Payment.Application.Commands.MarkPaymentAsFailed;
 
-public class MarkPaymentAsFailedCommandHandler(IPaymentRepository paymentRepository)
+public class MarkPaymentAsFailedCommandHandler(IPaymentRepository paymentRepository, ILogger<MarkPaymentAsFailedCommandHandler> logger)
     : ICommandHandler<MarkPaymentAsFailedCommand, bool>
 {
     public async Task<CommandResult<bool>> Handle(MarkPaymentAsFailedCommand request, CancellationToken cancellationToken)
@@ -26,6 +27,7 @@ public class MarkPaymentAsFailedCommandHandler(IPaymentRepository paymentReposit
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, "[MarkPaymentAsFailed] ERROR: {Message}", ex.Message);
             return CommandResult<bool>.Failure(ex.Message, "PAYMENT_ERROR");
         }
     }

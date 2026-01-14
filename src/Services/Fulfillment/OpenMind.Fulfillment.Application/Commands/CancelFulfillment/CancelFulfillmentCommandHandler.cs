@@ -1,9 +1,10 @@
+using Microsoft.Extensions.Logging;
 using OpenMind.Fulfillment.Domain.Repositories;
 using OpenMind.Shared.Application.Commands;
 
 namespace OpenMind.Fulfillment.Application.Commands.CancelFulfillment;
 
-public class CancelFulfillmentCommandHandler(IFulfillmentRepository fulfillmentRepository)
+public class CancelFulfillmentCommandHandler(IFulfillmentRepository fulfillmentRepository, ILogger<CancelFulfillmentCommandHandler> logger)
     : ICommandHandler<CancelFulfillmentCommand>
 {
     public async Task<CommandResult> Handle(CancelFulfillmentCommand request, CancellationToken cancellationToken)
@@ -23,6 +24,7 @@ public class CancelFulfillmentCommandHandler(IFulfillmentRepository fulfillmentR
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, "[CancelFulfillment] ERROR: {Message}", ex.Message);
             return CommandResult.Failure(ex.Message, "CANCEL_FULFILLMENT_ERROR");
         }
     }

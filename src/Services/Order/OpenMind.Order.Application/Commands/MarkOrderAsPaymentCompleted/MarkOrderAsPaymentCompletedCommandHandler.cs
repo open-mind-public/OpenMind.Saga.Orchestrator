@@ -1,9 +1,10 @@
+using Microsoft.Extensions.Logging;
 using OpenMind.Order.Domain.Repositories;
 using OpenMind.Shared.Application.Commands;
 
 namespace OpenMind.Order.Application.Commands.MarkOrderAsPaymentCompleted;
 
-public class MarkOrderAsPaymentCompletedCommandHandler(IOrderRepository orderRepository)
+public class MarkOrderAsPaymentCompletedCommandHandler(IOrderRepository orderRepository, ILogger<MarkOrderAsPaymentCompletedCommandHandler> logger)
     : ICommandHandler<MarkOrderAsPaymentCompletedCommand>
 {
     public async Task<CommandResult> Handle(MarkOrderAsPaymentCompletedCommand request, CancellationToken cancellationToken)
@@ -21,6 +22,7 @@ public class MarkOrderAsPaymentCompletedCommandHandler(IOrderRepository orderRep
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, "[MarkOrderAsPaymentCompleted] ERROR: {Message}", ex.Message);
             return CommandResult.Failure(ex.Message, "PAYMENT_COMPLETED_FAILED");
         }
     }

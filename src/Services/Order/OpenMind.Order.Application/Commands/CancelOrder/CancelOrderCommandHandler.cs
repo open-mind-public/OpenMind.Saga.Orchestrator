@@ -1,9 +1,10 @@
+using Microsoft.Extensions.Logging;
 using OpenMind.Order.Domain.Repositories;
 using OpenMind.Shared.Application.Commands;
 
 namespace OpenMind.Order.Application.Commands.CancelOrder;
 
-public class CancelOrderCommandHandler(IOrderRepository orderRepository)
+public class CancelOrderCommandHandler(IOrderRepository orderRepository, ILogger<CancelOrderCommandHandler> logger)
     : ICommandHandler<CancelOrderCommand>
 {
     public async Task<CommandResult> Handle(CancelOrderCommand request, CancellationToken cancellationToken)
@@ -21,6 +22,7 @@ public class CancelOrderCommandHandler(IOrderRepository orderRepository)
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, "[CancelOrder] ERROR: {Message}", ex.Message);
             return CommandResult.Failure(ex.Message, "CANCEL_ORDER_FAILED");
         }
     }

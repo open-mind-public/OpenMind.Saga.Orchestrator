@@ -1,9 +1,10 @@
+using Microsoft.Extensions.Logging;
 using OpenMind.Order.Domain.Repositories;
 using OpenMind.Shared.Application.Commands;
 
 namespace OpenMind.Order.Application.Commands.MarkOrderAsShipped;
 
-public class MarkOrderAsShippedCommandHandler(IOrderRepository orderRepository)
+public class MarkOrderAsShippedCommandHandler(IOrderRepository orderRepository, ILogger<MarkOrderAsShippedCommandHandler> logger)
     : ICommandHandler<MarkOrderAsShippedCommand>
 {
     public async Task<CommandResult> Handle(MarkOrderAsShippedCommand request, CancellationToken cancellationToken)
@@ -21,6 +22,7 @@ public class MarkOrderAsShippedCommandHandler(IOrderRepository orderRepository)
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, "[MarkOrderAsShipped] ERROR: {Message}", ex.Message);
             return CommandResult.Failure(ex.Message, "SHIPPED_UPDATE_FAILED");
         }
     }

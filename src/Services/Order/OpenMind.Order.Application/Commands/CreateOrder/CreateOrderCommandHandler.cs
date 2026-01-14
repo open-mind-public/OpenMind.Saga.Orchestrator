@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using OpenMind.Order.Domain.Aggregates;
 using OpenMind.Order.Domain.Entities;
 using OpenMind.Order.Domain.Repositories;
@@ -9,7 +10,7 @@ using OrderAggregate = OpenMind.Order.Domain.Aggregates.Order;
 
 namespace OpenMind.Order.Application.Commands.CreateOrder;
 
-public class CreateOrderCommandHandler(IOrderRepository orderRepository)
+public class CreateOrderCommandHandler(IOrderRepository orderRepository, ILogger<CreateOrderCommandHandler> logger)
     : ICommandHandler<CreateOrderCommand, Guid>
 {
     public async Task<CommandResult<Guid>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
@@ -43,6 +44,7 @@ public class CreateOrderCommandHandler(IOrderRepository orderRepository)
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, "[CreateOrder] ERROR: {Message}", ex.Message);
             return CommandResult<Guid>.Failure(ex.Message, "CREATE_ORDER_FAILED");
         }
     }

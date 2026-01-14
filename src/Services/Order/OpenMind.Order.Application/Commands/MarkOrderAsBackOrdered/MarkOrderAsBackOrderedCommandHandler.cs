@@ -1,9 +1,10 @@
+using Microsoft.Extensions.Logging;
 using OpenMind.Order.Domain.Repositories;
 using OpenMind.Shared.Application.Commands;
 
 namespace OpenMind.Order.Application.Commands.MarkOrderAsBackOrdered;
 
-public class MarkOrderAsBackOrderedCommandHandler(IOrderRepository orderRepository)
+public class MarkOrderAsBackOrderedCommandHandler(IOrderRepository orderRepository, ILogger<MarkOrderAsBackOrderedCommandHandler> logger)
     : ICommandHandler<MarkOrderAsBackOrderedCommand>
 {
     public async Task<CommandResult> Handle(MarkOrderAsBackOrderedCommand request, CancellationToken cancellationToken)
@@ -21,6 +22,7 @@ public class MarkOrderAsBackOrderedCommandHandler(IOrderRepository orderReposito
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, "[MarkOrderAsBackOrdered] ERROR: {Message}", ex.Message);
             return CommandResult.Failure(ex.Message, "BACKORDERED_UPDATE_FAILED");
         }
     }

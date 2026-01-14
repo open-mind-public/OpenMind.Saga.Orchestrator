@@ -1,9 +1,10 @@
+using Microsoft.Extensions.Logging;
 using OpenMind.Payment.Domain.Repositories;
 using OpenMind.Shared.Application.Commands;
 
 namespace OpenMind.Payment.Application.Commands.RefundPayment;
 
-public class RefundPaymentCommandHandler(IPaymentRepository paymentRepository)
+public class RefundPaymentCommandHandler(IPaymentRepository paymentRepository, ILogger<RefundPaymentCommandHandler> logger)
     : ICommandHandler<RefundPaymentCommand>
 {
     public async Task<CommandResult> Handle(RefundPaymentCommand request, CancellationToken cancellationToken)
@@ -34,6 +35,7 @@ public class RefundPaymentCommandHandler(IPaymentRepository paymentRepository)
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, "[RefundPayment] ERROR: {Message}", ex.Message);
             return CommandResult.Failure(ex.Message, "REFUND_ERROR");
         }
     }
