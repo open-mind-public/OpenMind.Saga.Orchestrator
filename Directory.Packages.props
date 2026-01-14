@@ -9,6 +9,7 @@
     <!-- MassTransit for Saga State Machine -->
     <PackageVersion Include="MassTransit" Version="8.2.5" />
     <PackageVersion Include="MassTransit.MongoDb" Version="8.2.5" />
+    <PackageVersion Include="MassTransit.AmazonSQS" Version="8.2.5" />
     
     <!-- MongoDB -->
     <PackageVersion Include="MongoDB.Driver" Version="2.28.0" />
@@ -19,7 +20,7 @@
     
     <!-- ASP.NET Core -->
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0-preview.1.25120.3" />
-    <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.8.1" />
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="7.2.0" />
     
     <!-- Logging -->
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />

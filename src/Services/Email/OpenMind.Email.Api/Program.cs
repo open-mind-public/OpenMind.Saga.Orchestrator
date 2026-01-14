@@ -1,14 +1,10 @@
-using FluentValidation;
 using MassTransit;
-using MediatR;
-using MongoDB.Driver;
 using OpenMind.Email.Api.Endpoints;
-using OpenMind.Email.Application.Commands.SendEmail;
-using OpenMind.Email.Application.IntegrationCommandHandlers;
-using OpenMind.Email.Domain.Repositories;
-using OpenMind.Email.Infrastructure.Repositories;
-using OpenMind.Shared.Application.Behaviors;
-using OpenMind.Shared.MongoDb;
+using OpenMind.Email.Api.Features.SendBackorderEmail;
+using OpenMind.Email.Api.Features.SendOrderCancelledEmail;
+using OpenMind.Email.Api.Features.SendOrderConfirmationEmail;
+using OpenMind.Email.Api.Features.SendPaymentFailedEmail;
+using OpenMind.Email.Api.Features.SendRefundEmail;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,28 +20,11 @@ builder.Host.UseSerilog();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// MongoDB
-MongoDbConventions.Initialize();
-var mongoSettings = builder.Configuration.GetSection("MongoDB").Get<MongoDbSettings>()
-    ?? new MongoDbSettings { DatabaseName = "EmailDb" };
 
-builder.Services.AddSingleton<IMongoClient>(_ => new MongoClient(mongoSettings.ConnectionString));
-builder.Services.AddScoped(sp => sp.GetRequiredService<IMongoClient>().GetDatabase(mongoSettings.DatabaseName));
+// MassTransit with Amazon SQS/SNS
+var awsServiceUrl = builder.Configuration["AWS:ServiceURL"] ?? "http://localhost:4566";
+var awsRegion = builder.Configuration["AWS:Region"] ?? "us-east-1";
 
-// Repositories
-builder.Services.AddScoped<IEmailNotificationRepository, EmailNotificationRepository>();
-
-// MediatR
-builder.Services.AddMediatR(cfg =>
-{
-    cfg.RegisterServicesFromAssembly(typeof(SendEmailCommandHandler).Assembly);
-    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
-    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
-});
-
-builder.Services.AddValidatorsFromAssembly(typeof(SendEmailCommandHandler).Assembly);
-
-// MassTransit
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<SendOrderConfirmationEmailConsumer>();
@@ -54,8 +33,16 @@ builder.Services.AddMassTransit(x =>
     x.AddConsumer<SendBackorderEmailConsumer>();
     x.AddConsumer<SendRefundEmailConsumer>();
 
-    x.UsingInMemory((context, cfg) =>
+    x.UsingAmazonSqs((context, cfg) =>
     {
+        cfg.Host(awsRegion, h =>
+        {
+            h.AccessKey("test");
+            h.SecretKey("test");
+            h.Config(new Amazon.SQS.AmazonSQSConfig { ServiceURL = awsServiceUrl });
+            h.Config(new Amazon.SimpleNotificationService.AmazonSimpleNotificationServiceConfig { ServiceURL = awsServiceUrl });
+        });
+
         cfg.ConfigureEndpoints(context);
     });
 });
@@ -68,7 +55,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Map endpoints
 app.MapHealthEndpoints("Email");
 
 Log.Information("Email Service starting...");

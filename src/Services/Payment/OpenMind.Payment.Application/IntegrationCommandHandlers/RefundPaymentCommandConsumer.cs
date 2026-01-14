@@ -1,11 +1,13 @@
 using MassTransit;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using OpenMind.Payment.IntegrationEvents.Commands;
 using AppCommand = OpenMind.Payment.Application.Commands.RefundPayment;
 
 namespace OpenMind.Payment.Application.IntegrationCommandHandlers;
 
-public class RefundPaymentCommandConsumer(IMediator mediator) : IConsumer<RefundPaymentCommand>
+public class RefundPaymentCommandConsumer(IMediator mediator, ILogger<RefundPaymentCommandConsumer> logger) 
+    : IConsumer<RefundPaymentCommand>
 {
     public async Task Consume(ConsumeContext<RefundPaymentCommand> context)
     {
@@ -19,5 +21,7 @@ public class RefundPaymentCommandConsumer(IMediator mediator) : IConsumer<Refund
         };
 
         await mediator.Send(command);
+
+        logger.LogInformation("[Payment] Consumed RefundPaymentCommand - OrderId: {OrderId}, Amount: {Amount}, CorrelationId: {CorrelationId}", context.Message.OrderId, context.Message.Amount, context.Message.CorrelationId);
     }
 }

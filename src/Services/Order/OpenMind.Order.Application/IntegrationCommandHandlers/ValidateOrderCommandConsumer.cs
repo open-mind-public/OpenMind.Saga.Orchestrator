@@ -1,5 +1,6 @@
 using MassTransit;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using OpenMind.Order.IntegrationEvents.Commands;
 using OpenMind.Order.IntegrationEvents.Events;
 using OpenMind.Order.Application.Queries.GetOrder;
@@ -11,7 +12,7 @@ namespace OpenMind.Order.Application.IntegrationCommandHandlers;
 /// Consumer for ValidateOrderCommand from the orchestrator.
 /// Validates that an order exists and returns its details.
 /// </summary>
-public class ValidateOrderCommandConsumer(IMediator mediator, IPublishEndpoint publishEndpoint)
+public class ValidateOrderCommandConsumer(IMediator mediator, IPublishEndpoint publishEndpoint, ILogger<ValidateOrderCommandConsumer> logger)
     : IConsumer<ValidateOrderCommand>
 {
     public async Task Consume(ConsumeContext<ValidateOrderCommand> context)
@@ -39,6 +40,8 @@ public class ValidateOrderCommandConsumer(IMediator mediator, IPublishEndpoint p
                     UnitPrice = i.UnitPrice
                 }).ToList()
             });
+
+            logger.LogInformation("[Order] Published OrderValidatedEvent - OrderId: {OrderId}, CorrelationId: {CorrelationId}", order.Id, context.Message.CorrelationId);
         }
         else
         {
@@ -48,6 +51,8 @@ public class ValidateOrderCommandConsumer(IMediator mediator, IPublishEndpoint p
                 OrderId = context.Message.OrderId,
                 Reason = result.ErrorMessage ?? "Order not found"
             });
+
+            logger.LogWarning("[Order] Published OrderValidationFailedEvent - OrderId: {OrderId}, Reason: {Reason}, CorrelationId: {CorrelationId}", context.Message.OrderId, result.ErrorMessage ?? "Order not found", context.Message.CorrelationId);
         }
     }
 }

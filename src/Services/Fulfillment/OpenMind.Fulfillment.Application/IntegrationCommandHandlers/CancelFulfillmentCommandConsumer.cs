@@ -1,11 +1,13 @@
 using MassTransit;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using OpenMind.Fulfillment.IntegrationEvents.Commands;
 using AppCommand = OpenMind.Fulfillment.Application.Commands.CancelFulfillment;
 
 namespace OpenMind.Fulfillment.Application.IntegrationCommandHandlers;
 
-public class CancelFulfillmentCommandConsumer(IMediator mediator) : IConsumer<CancelFulfillmentCommand>
+public class CancelFulfillmentCommandConsumer(IMediator mediator, ILogger<CancelFulfillmentCommandConsumer> logger) 
+    : IConsumer<CancelFulfillmentCommand>
 {
     public async Task Consume(ConsumeContext<CancelFulfillmentCommand> context)
     {
@@ -18,5 +20,7 @@ public class CancelFulfillmentCommandConsumer(IMediator mediator) : IConsumer<Ca
         };
 
         await mediator.Send(command);
+
+        logger.LogInformation("[Fulfillment] Consumed CancelFulfillmentCommand - OrderId: {OrderId}, CorrelationId: {CorrelationId}", context.Message.OrderId, context.Message.CorrelationId);
     }
 }

@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MassTransit.AmazonSQS" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     <PackageReference Include="Swashbuckle.AspNetCore" />
     <PackageReference Include="Serilog.AspNetCore" />
@@ -12,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OpenMind.Email.Infrastructure\OpenMind.Email.Infrastructure.csproj" />
+    <ProjectReference Include="..\OpenMind.Email.IntegrationMessages\OpenMind.Email.IntegrationMessages.csproj" />
   </ItemGroup>
 
 </Project>

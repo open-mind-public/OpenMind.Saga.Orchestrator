@@ -1,11 +1,12 @@
 using MassTransit;
+using Microsoft.Extensions.Logging;
 using OpenMind.Fulfillment.IntegrationEvents.Events;
 using OpenMind.Fulfillment.Domain.Events;
 using OpenMind.Shared.Application.DomainEvents;
 
 namespace OpenMind.Fulfillment.Application.DomainEventHandlers;
 
-public class FulfillmentShippedDomainEventHandler(IPublishEndpoint publishEndpoint)
+public class FulfillmentShippedDomainEventHandler(IPublishEndpoint publishEndpoint, ILogger<FulfillmentShippedDomainEventHandler> logger)
     : IDomainEventHandler<FulfillmentShippedDomainEvent>
 {
     public async Task Handle(DomainEventNotification<FulfillmentShippedDomainEvent> notification, CancellationToken cancellationToken)
@@ -20,5 +21,7 @@ public class FulfillmentShippedDomainEventHandler(IPublishEndpoint publishEndpoi
             TrackingNumber = domainEvent.TrackingNumber,
             EstimatedDelivery = domainEvent.EstimatedDelivery
         }, cancellationToken);
+
+        logger.LogInformation("[Fulfillment] Published OrderShippedEvent - OrderId: {OrderId}, TrackingNumber: {TrackingNumber}, CorrelationId: {CorrelationId}", domainEvent.OrderId, domainEvent.TrackingNumber, domainEvent.CorrelationId);
     }
 }

@@ -1,11 +1,12 @@
 using MassTransit;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using OpenMind.Order.IntegrationEvents.Commands;
 using AppCommand = OpenMind.Order.Application.Commands.MarkOrderAsPaymentCompleted;
 
 namespace OpenMind.Order.Application.IntegrationCommandHandlers;
 
-public class MarkOrderAsPaymentCompletedCommandConsumer(IMediator mediator)
+public class MarkOrderAsPaymentCompletedCommandConsumer(IMediator mediator, ILogger<MarkOrderAsPaymentCompletedCommandConsumer> logger)
     : IConsumer<MarkOrderAsPaymentCompletedCommand>
 {
     public async Task Consume(ConsumeContext<MarkOrderAsPaymentCompletedCommand> context)
@@ -18,5 +19,7 @@ public class MarkOrderAsPaymentCompletedCommandConsumer(IMediator mediator)
         };
 
         await mediator.Send(command);
+
+        logger.LogInformation("[Order] Consumed MarkOrderAsPaymentCompletedCommand - OrderId: {OrderId}, CorrelationId: {CorrelationId}", context.Message.OrderId, context.Message.CorrelationId);
     }
 }

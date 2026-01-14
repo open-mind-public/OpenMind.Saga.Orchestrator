@@ -17,98 +17,136 @@ services:
       timeout: 5s
       retries: 5
 
-  # Order Placement Orchestrator (Central Saga Coordinator)
-  orchestrator:
-    build:
-      context: .
-      dockerfile: src/Services/Orchestrator/OpenMind.Orchestrator.Api/Dockerfile
-    container_name: openmind-orchestrator
+  # LocalStack for AWS SQS/SNS (Local Development)
+  localstack:
+    image: localstack/localstack:latest
+    container_name: openmind-localstack
     ports:
-      - "5000:8080"
+      - "4566:4566"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - MongoDB__ConnectionString=mongodb://mongodb:27017
-      - MongoDB__DatabaseName=OrchestratorDb
-    depends_on:
-      mongodb:
-        condition: service_healthy
+      - SERVICES=sqs,sns
+      - DEBUG=1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - localstack_data:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - openmind-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  # Order Service
-  order:
-    build:
-      context: .
-      dockerfile: src/Services/Order/OpenMind.Order.Api/Dockerfile
-    container_name: openmind-order
-    ports:
-      - "5001:8080"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - MongoDB__ConnectionString=mongodb://mongodb:27017
-      - MongoDB__DatabaseName=OrderDb
-    depends_on:
-      mongodb:
-        condition: service_healthy
-    networks:
-      - openmind-network
-
-  # Payment Service
-  payment:
-    build:
-      context: .
-      dockerfile: src/Services/Payment/OpenMind.Payment.Api/Dockerfile
-    container_name: openmind-payment
-    ports:
-      - "5002:8080"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - MongoDB__ConnectionString=mongodb://mongodb:27017
-      - MongoDB__DatabaseName=PaymentDb
-    depends_on:
-      mongodb:
-        condition: service_healthy
-    networks:
-      - openmind-network
-
-  # Fulfillment Service
-  fulfillment:
-    build:
-      context: .
-      dockerfile: src/Services/Fulfillment/OpenMind.Fulfillment.Api/Dockerfile
-    container_name: openmind-fulfillment
-    ports:
-      - "5003:8080"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - MongoDB__ConnectionString=mongodb://mongodb:27017
-      - MongoDB__DatabaseName=FulfillmentDb
-    depends_on:
-      mongodb:
-        condition: service_healthy
-    networks:
-      - openmind-network
-
-  # Email Service
-  email:
-    build:
-      context: .
-      dockerfile: src/Services/Email/OpenMind.Email.Api/Dockerfile
-    container_name: openmind-email
-    ports:
-      - "5004:8080"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - MongoDB__ConnectionString=mongodb://mongodb:27017
-      - MongoDB__DatabaseName=EmailDb
-    depends_on:
-      mongodb:
-        condition: service_healthy
-    networks:
-      - openmind-network
+#  # Order Placement Orchestrator (Central Saga Coordinator)
+#  orchestrator:
+#    build:
+#      context: .
+#      dockerfile: src/Services/Orchestrator/OpenMind.Orchestrator.Api/Dockerfile
+#    container_name: openmind-orchestrator
+#    ports:
+#      - "5000:8080"
+#    environment:
+#      - ASPNETCORE_ENVIRONMENT=Development
+#      - MongoDB__ConnectionString=mongodb://mongodb:27017
+#      - MongoDB__DatabaseName=OrchestratorDb
+#      - AWS__ServiceURL=http://localstack:4566
+#      - AWS__Region=us-east-1
+#    depends_on:
+#      mongodb:
+#        condition: service_healthy
+#      localstack:
+#        condition: service_healthy
+#    networks:
+#      - openmind-network
+#
+#  # Order Service
+#  order:
+#    build:
+#      context: .
+#      dockerfile: src/Services/Order/OpenMind.Order.Api/Dockerfile
+#    container_name: openmind-order
+#    ports:
+#      - "5001:8080"
+#    environment:
+#      - ASPNETCORE_ENVIRONMENT=Development
+#      - MongoDB__ConnectionString=mongodb://mongodb:27017
+#      - MongoDB__DatabaseName=OrderDb
+#      - AWS__ServiceURL=http://localstack:4566
+#      - AWS__Region=us-east-1
+#    depends_on:
+#      mongodb:
+#        condition: service_healthy
+#      localstack:
+#        condition: service_healthy
+#    networks:
+#      - openmind-network
+#
+#  # Payment Service
+#  payment:
+#    build:
+#      context: .
+#      dockerfile: src/Services/Payment/OpenMind.Payment.Api/Dockerfile
+#    container_name: openmind-payment
+#    ports:
+#      - "5002:8080"
+#    environment:
+#      - ASPNETCORE_ENVIRONMENT=Development
+#      - MongoDB__ConnectionString=mongodb://mongodb:27017
+#      - MongoDB__DatabaseName=PaymentDb
+#      - AWS__ServiceURL=http://localstack:4566
+#      - AWS__Region=us-east-1
+#    depends_on:
+#      mongodb:
+#        condition: service_healthy
+#      localstack:
+#        condition: service_healthy
+#    networks:
+#      - openmind-network
+#
+#  # Fulfillment Service
+#  fulfillment:
+#    build:
+#      context: .
+#      dockerfile: src/Services/Fulfillment/OpenMind.Fulfillment.Api/Dockerfile
+#    container_name: openmind-fulfillment
+#    ports:
+#      - "5003:8080"
+#    environment:
+#      - ASPNETCORE_ENVIRONMENT=Development
+#      - MongoDB__ConnectionString=mongodb://mongodb:27017
+#      - MongoDB__DatabaseName=FulfillmentDb
+#      - AWS__ServiceURL=http://localstack:4566
+#      - AWS__Region=us-east-1
+#    depends_on:
+#      mongodb:
+#        condition: service_healthy
+#      localstack:
+#        condition: service_healthy
+#    networks:
+#      - openmind-network
+#
+#  # Email Service
+#  email:
+#    build:
+#      context: .
+#      dockerfile: src/Services/Email/OpenMind.Email.Api/Dockerfile
+#    container_name: openmind-email
+#    ports:
+#      - "5004:8080"
+#    environment:
+#      - ASPNETCORE_ENVIRONMENT=Development
+#      - AWS__ServiceURL=http://localstack:4566
+#      - AWS__Region=us-east-1
+#    depends_on:
+#      localstack:
+#        condition: service_healthy
+#    networks:
+#      - openmind-network
 
 volumes:
   mongodb_data:
+  localstack_data:
 
 networks:
   openmind-network:

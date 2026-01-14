@@ -244,7 +244,7 @@ Each service has its own database:
 ```json
 {
   "MongoDB": {
-    "ConnectionString": "mongodb://localhost:27017",
+    "ConnectionString": "mongodb://localhost:27019",
     "DatabaseName": "ServiceNameDb"
   }
 }

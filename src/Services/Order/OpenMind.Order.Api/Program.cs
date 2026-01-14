@@ -50,7 +50,10 @@ builder.Services.AddMediatR(cfg =>
 // FluentValidation
 builder.Services.AddValidatorsFromAssembly(typeof(CreateOrderCommandValidator).Assembly);
 
-// MassTransit with In-Memory Transport
+// MassTransit with Amazon SQS/SNS
+var awsServiceUrl = builder.Configuration["AWS:ServiceURL"] ?? "http://localhost:4566";
+var awsRegion = builder.Configuration["AWS:Region"] ?? "us-east-1";
+
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<ValidateOrderCommandConsumer>();
@@ -60,8 +63,16 @@ builder.Services.AddMassTransit(x =>
     x.AddConsumer<MarkOrderAsBackOrderedCommandConsumer>();
     x.AddConsumer<CancelOrderCommandConsumer>();
 
-    x.UsingInMemory((context, cfg) =>
+    x.UsingAmazonSqs((context, cfg) =>
     {
+        cfg.Host(awsRegion, h =>
+        {
+            h.AccessKey("test");
+            h.SecretKey("test");
+            h.Config(new Amazon.SQS.AmazonSQSConfig { ServiceURL = awsServiceUrl });
+            h.Config(new Amazon.SimpleNotificationService.AmazonSimpleNotificationServiceConfig { ServiceURL = awsServiceUrl });
+        });
+
         cfg.ConfigureEndpoints(context);
     });
 });

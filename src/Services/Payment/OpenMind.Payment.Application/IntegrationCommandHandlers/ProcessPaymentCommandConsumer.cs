@@ -1,11 +1,13 @@
 using MassTransit;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using OpenMind.Payment.IntegrationEvents.Commands;
 using AppCommand = OpenMind.Payment.Application.Commands.ProcessPayment;
 
 namespace OpenMind.Payment.Application.IntegrationCommandHandlers;
 
-public class ProcessPaymentCommandConsumer(IMediator mediator) : IConsumer<ProcessPaymentCommand>
+public class ProcessPaymentCommandConsumer(IMediator mediator, ILogger<ProcessPaymentCommandConsumer> logger) 
+    : IConsumer<ProcessPaymentCommand>
 {
     public async Task Consume(ConsumeContext<ProcessPaymentCommand> context)
     {
@@ -19,10 +21,8 @@ public class ProcessPaymentCommandConsumer(IMediator mediator) : IConsumer<Proce
             CardExpiry = context.Message.CardExpiry
         };
 
-        // The command handler will trigger domain events which will:
-        // 1. PaymentProcessingStartedDomainEvent -> calls payment gateway -> dispatches MarkPaymentAsPaid/MarkPaymentAsFailed command
-        // 2. PaymentPaidDomainEvent -> publishes PaymentCompletedEvent integration event
-        // 3. PaymentFailedDomainEvent -> publishes PaymentFailedEvent integration event
         await mediator.Send(command);
+
+        logger.LogInformation("[Payment] Consumed ProcessPaymentCommand - OrderId: {OrderId}, Amount: {Amount}, CorrelationId: {CorrelationId}", context.Message.OrderId, context.Message.Amount, context.Message.CorrelationId);
     }
 }

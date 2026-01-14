@@ -45,14 +45,25 @@ builder.Services.AddMediatR(cfg =>
 
 builder.Services.AddValidatorsFromAssembly(typeof(FulfillOrderCommandHandler).Assembly);
 
-// MassTransit
+// MassTransit with Amazon SQS/SNS
+var awsServiceUrl = builder.Configuration["AWS:ServiceURL"] ?? "http://localhost:4566";
+var awsRegion = builder.Configuration["AWS:Region"] ?? "us-east-1";
+
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<FulfillOrderCommandConsumer>();
     x.AddConsumer<CancelFulfillmentCommandConsumer>();
 
-    x.UsingInMemory((context, cfg) =>
+    x.UsingAmazonSqs((context, cfg) =>
     {
+        cfg.Host(awsRegion, h =>
+        {
+            h.AccessKey("test");
+            h.SecretKey("test");
+            h.Config(new Amazon.SQS.AmazonSQSConfig { ServiceURL = awsServiceUrl });
+            h.Config(new Amazon.SimpleNotificationService.AmazonSimpleNotificationServiceConfig { ServiceURL = awsServiceUrl });
+        });
+
         cfg.ConfigureEndpoints(context);
     });
 });
