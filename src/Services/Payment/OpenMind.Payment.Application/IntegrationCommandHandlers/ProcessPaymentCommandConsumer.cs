@@ -1,7 +1,7 @@
 using MassTransit;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using OpenMind.Payment.IntegrationEvents.Commands;
+using OpenMind.Payment.Contract.Commands;
 using AppCommand = OpenMind.Payment.Application.Commands.ProcessPayment;
 
 namespace OpenMind.Payment.Application.IntegrationCommandHandlers;

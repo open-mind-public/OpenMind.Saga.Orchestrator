@@ -1,15 +1,15 @@
 using MassTransit;
 using MongoDB.Driver;
-using OpenMind.Email.IntegrationEvents.Commands;
-using OpenMind.Email.IntegrationEvents.Events;
-using OpenMind.Fulfillment.IntegrationEvents.Commands;
-using OpenMind.Fulfillment.IntegrationEvents.Events;
-using OpenMind.Order.IntegrationEvents.Commands;
-using OpenMind.Order.IntegrationEvents.Events;
+using OpenMind.Email.Contract.Commands;
+using OpenMind.Email.Contract.Events;
+using OpenMind.Fulfillment.Contract.Commands;
+using OpenMind.Fulfillment.Contract.Events;
+using OpenMind.Order.Contract.Commands;
+using OpenMind.Order.Contract.Events;
 using OpenMind.OrderPlacement.Orchestrator.Api.Endpoints;
 using OpenMind.OrderPlacement.Orchestrator.Api.StateMachine;
-using OpenMind.Payment.IntegrationEvents.Commands;
-using OpenMind.Payment.IntegrationEvents.Events;
+using OpenMind.Payment.Contract.Commands;
+using OpenMind.Payment.Contract.Events;
 using OpenMind.Shared.MongoDb;
 using Serilog;
 

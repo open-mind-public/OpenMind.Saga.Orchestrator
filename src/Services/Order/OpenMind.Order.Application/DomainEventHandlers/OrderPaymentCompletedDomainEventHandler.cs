@@ -1,5 +1,5 @@
 using MassTransit;
-using OpenMind.Order.IntegrationEvents.Events;
+using OpenMind.Order.Contract.Events;
 using OpenMind.Order.Domain.Events;
 using OpenMind.Shared.Application.DomainEvents;
 

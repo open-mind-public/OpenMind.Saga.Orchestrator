@@ -5,14 +5,14 @@ using MongoDB.Driver;
 using OpenMind.Payment.Api.Endpoints;
 using OpenMind.Payment.Application.Commands.ProcessPayment;
 using OpenMind.Payment.Application.IntegrationCommandHandlers;
+using OpenMind.Payment.Contract.Commands;
+using OpenMind.Payment.Contract.Events;
 using OpenMind.Payment.Domain.Repositories;
 using OpenMind.Payment.Infrastructure.Repositories;
-using OpenMind.Payment.IntegrationEvents.Commands;
-using OpenMind.Payment.IntegrationEvents.Events;
 using OpenMind.Shared.Application.Behaviors;
 using OpenMind.Shared.MongoDb;
 using Serilog;
-using ProcessPaymentCommand = OpenMind.Payment.IntegrationEvents.Commands.ProcessPaymentCommand;
+using ProcessPaymentCommand = OpenMind.Payment.Contract.Commands.ProcessPaymentCommand;
 
 var builder = WebApplication.CreateBuilder(args);
 

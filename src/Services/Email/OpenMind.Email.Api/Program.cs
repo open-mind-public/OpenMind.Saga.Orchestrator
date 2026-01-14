@@ -5,8 +5,8 @@ using OpenMind.Email.Api.Features.SendOrderCancelledEmail;
 using OpenMind.Email.Api.Features.SendOrderConfirmationEmail;
 using OpenMind.Email.Api.Features.SendPaymentFailedEmail;
 using OpenMind.Email.Api.Features.SendRefundEmail;
-using OpenMind.Email.IntegrationEvents.Commands;
-using OpenMind.Email.IntegrationEvents.Events;
+using OpenMind.Email.Contract.Commands;
+using OpenMind.Email.Contract.Events;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);

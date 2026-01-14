@@ -1,0 +1,15 @@
+using OpenMind.Shared.IntegrationMessages;
+
+namespace OpenMind.Email.Contract.Commands;
+
+/// <summary>
+/// Command to send order cancellation email.
+/// </summary>
+public record SendOrderCancelledEmailCommand : IntegrationCommand, IEmailCommand
+{
+    public Guid OrderId { get; init; }
+    public Guid CustomerId { get; init; }
+    public string CustomerEmail { get; init; } = string.Empty;
+    public string CustomerName { get; init; } = string.Empty;
+    public string CancellationReason { get; init; } = string.Empty;
+}

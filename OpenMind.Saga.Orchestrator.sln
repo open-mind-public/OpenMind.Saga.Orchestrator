@@ -54,13 +54,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Email.Api", "src\S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.OrderPlacement.Orchestrator.Api", "src\Services\Orchestrator\OpenMind.OrderPlacement.Orchestrator.Api\OpenMind.OrderPlacement.Orchestrator.Api.csproj", "{01000001-0000-0000-0000-000000000001}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Order.IntegrationMessages", "src\Services\Order\OpenMind.Order.IntegrationMessages\OpenMind.Order.IntegrationMessages.csproj", "{2FFB8447-D7B9-439E-9878-345959164AD0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Order.Contract", "src\Services\Order\OpenMind.Order.Contract\OpenMind.Order.Contract.csproj", "{2FFB8447-D7B9-439E-9878-345959164AD0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Payment.IntegrationMessages", "src\Services\Payment\OpenMind.Payment.IntegrationMessages\OpenMind.Payment.IntegrationMessages.csproj", "{A2C7CFFB-C51F-4259-ABD5-A465D08A4B31}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Payment.Contract", "src\Services\Payment\OpenMind.Payment.Contract\OpenMind.Payment.Contract.csproj", "{A2C7CFFB-C51F-4259-ABD5-A465D08A4B31}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Fulfillment.IntegrationMessages", "src\Services\Fulfillment\OpenMind.Fulfillment.IntegrationMessages\OpenMind.Fulfillment.IntegrationMessages.csproj", "{38E27262-DE05-45AF-8B47-0D1A3A778EF3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Fulfillment.Contract", "src\Services\Fulfillment\OpenMind.Fulfillment.Contract\OpenMind.Fulfillment.Contract.csproj", "{38E27262-DE05-45AF-8B47-0D1A3A778EF3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Email.IntegrationMessages", "src\Services\Email\OpenMind.Email.IntegrationMessages\OpenMind.Email.IntegrationMessages.csproj", "{BCEED45B-D3C3-4E3E-8DF9-A2DD94B42644}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Email.Contract", "src\Services\Email\OpenMind.Email.Contract\OpenMind.Email.Contract.csproj", "{BCEED45B-D3C3-4E3E-8DF9-A2DD94B42644}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

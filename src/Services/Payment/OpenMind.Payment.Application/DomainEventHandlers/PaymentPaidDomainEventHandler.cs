@@ -1,6 +1,6 @@
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using OpenMind.Payment.IntegrationEvents.Events;
+using OpenMind.Payment.Contract.Events;
 using OpenMind.Payment.Domain.Events;
 using OpenMind.Shared.Application.DomainEvents;
 

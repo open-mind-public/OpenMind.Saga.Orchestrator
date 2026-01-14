@@ -1,7 +1,7 @@
 using MassTransit;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using OpenMind.Order.IntegrationEvents.Commands;
+using OpenMind.Order.Contract.Commands;
 using AppCommand = OpenMind.Order.Application.Commands.MarkOrderAsPaymentCompleted;
 
 namespace OpenMind.Order.Application.IntegrationCommandHandlers;

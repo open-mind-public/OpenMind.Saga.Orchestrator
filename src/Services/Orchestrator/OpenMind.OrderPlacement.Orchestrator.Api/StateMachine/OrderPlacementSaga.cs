@@ -1,14 +1,14 @@
 using System.Text.Json;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using OpenMind.Email.IntegrationEvents.Commands;
-using OpenMind.Email.IntegrationEvents.Events;
-using OpenMind.Fulfillment.IntegrationEvents.Commands;
-using OpenMind.Fulfillment.IntegrationEvents.Events;
-using OpenMind.Order.IntegrationEvents.Commands;
-using OpenMind.Order.IntegrationEvents.Events;
-using OpenMind.Payment.IntegrationEvents.Commands;
-using OpenMind.Payment.IntegrationEvents.Events;
+using OpenMind.Email.Contract.Commands;
+using OpenMind.Email.Contract.Events;
+using OpenMind.Fulfillment.Contract.Commands;
+using OpenMind.Fulfillment.Contract.Events;
+using OpenMind.Order.Contract.Commands;
+using OpenMind.Order.Contract.Events;
+using OpenMind.Payment.Contract.Commands;
+using OpenMind.Payment.Contract.Events;
 
 namespace OpenMind.OrderPlacement.Orchestrator.Api.StateMachine;
 

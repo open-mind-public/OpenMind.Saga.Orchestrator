@@ -5,14 +5,14 @@ using MongoDB.Driver;
 using OpenMind.Fulfillment.Api.Endpoints;
 using OpenMind.Fulfillment.Application.Commands.FulfillOrder;
 using OpenMind.Fulfillment.Application.IntegrationCommandHandlers;
+using OpenMind.Fulfillment.Contract.Commands;
+using OpenMind.Fulfillment.Contract.Events;
 using OpenMind.Fulfillment.Domain.Repositories;
 using OpenMind.Fulfillment.Infrastructure.Repositories;
-using OpenMind.Fulfillment.IntegrationEvents.Commands;
-using OpenMind.Fulfillment.IntegrationEvents.Events;
 using OpenMind.Shared.Application.Behaviors;
 using OpenMind.Shared.MongoDb;
 using Serilog;
-using FulfillOrderCommand = OpenMind.Fulfillment.IntegrationEvents.Commands.FulfillOrderCommand;
+using FulfillOrderCommand = OpenMind.Fulfillment.Contract.Commands.FulfillOrderCommand;
 
 var builder = WebApplication.CreateBuilder(args);
 

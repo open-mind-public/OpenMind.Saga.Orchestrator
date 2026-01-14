@@ -1,10 +1,10 @@
 using MassTransit;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using OpenMind.Order.IntegrationEvents.Commands;
-using OpenMind.Order.IntegrationEvents.Events;
 using OpenMind.Order.Application.Queries.GetOrder;
-using IntegrationOrderItemDto = OpenMind.Order.IntegrationEvents.OrderItemDto;
+using OpenMind.Order.Contract.Commands;
+using OpenMind.Order.Contract.Events;
+using IntegrationOrderItemDto = OpenMind.Order.Contract.OrderItemDto;
 
 namespace OpenMind.Order.Application.IntegrationCommandHandlers;
 

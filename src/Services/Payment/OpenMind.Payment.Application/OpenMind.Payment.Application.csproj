@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\OpenMind.Shared.Application\OpenMind.Shared.Application.csproj" />
-    <ProjectReference Include="..\OpenMind.Payment.IntegrationMessages\OpenMind.Payment.IntegrationMessages.csproj" />
+    <ProjectReference Include="..\OpenMind.Payment.Contract\OpenMind.Payment.Contract.csproj" />
     <ProjectReference Include="..\OpenMind.Payment.Domain\OpenMind.Payment.Domain.csproj" />
   </ItemGroup>
 

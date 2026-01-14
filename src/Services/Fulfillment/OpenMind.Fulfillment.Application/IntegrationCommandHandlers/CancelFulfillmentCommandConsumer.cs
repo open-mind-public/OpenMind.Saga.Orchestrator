@@ -1,7 +1,7 @@
 using MassTransit;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using OpenMind.Fulfillment.IntegrationEvents.Commands;
+using OpenMind.Fulfillment.Contract.Commands;
 using AppCommand = OpenMind.Fulfillment.Application.Commands.CancelFulfillment;
 
 namespace OpenMind.Fulfillment.Application.IntegrationCommandHandlers;

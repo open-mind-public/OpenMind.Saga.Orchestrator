@@ -16,10 +16,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\OpenMind.Shared.MongoDb\OpenMind.Shared.MongoDb.csproj" />
-    <ProjectReference Include="..\..\Order\OpenMind.Order.IntegrationMessages\OpenMind.Order.IntegrationMessages.csproj" />
-    <ProjectReference Include="..\..\Payment\OpenMind.Payment.IntegrationMessages\OpenMind.Payment.IntegrationMessages.csproj" />
-    <ProjectReference Include="..\..\Fulfillment\OpenMind.Fulfillment.IntegrationMessages\OpenMind.Fulfillment.IntegrationMessages.csproj" />
-    <ProjectReference Include="..\..\Email\OpenMind.Email.IntegrationMessages\OpenMind.Email.IntegrationMessages.csproj" />
+    <ProjectReference Include="..\..\Order\OpenMind.Order.Contract\OpenMind.Order.Contract.csproj" />
+    <ProjectReference Include="..\..\Payment\OpenMind.Payment.Contract\OpenMind.Payment.Contract.csproj" />
+    <ProjectReference Include="..\..\Fulfillment\OpenMind.Fulfillment.Contract\OpenMind.Fulfillment.Contract.csproj" />
+    <ProjectReference Include="..\..\Email\OpenMind.Email.Contract\OpenMind.Email.Contract.csproj" />
   </ItemGroup>
 
 </Project>
