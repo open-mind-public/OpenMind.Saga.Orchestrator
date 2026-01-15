@@ -23,10 +23,10 @@ namespace OpenMind.OrderPlacement.Orchestrator.Api;
 /// 5. SendingConfirmation → Completed
 /// 
 /// Error Paths (Retryable):
-/// - Validation Failed: Validating → ValidationFailed (retry allowed)
+/// - Validation Failed: Validating → ValidationFailed (retry via PlaceOrder)
+/// - Payment Not Paid: PaymentProcessing → PaymentNotPaid (retry via Payment API, then continues to Fulfilling)
 /// 
 /// Error Paths (Terminal):
-/// - Payment Failed: PaymentProcessing → SendingPaymentFailedEmail → Cancelled
 /// - Out of Stock: Fulfilling → RefundingPayment → SendingBackorderEmail → Cancelled
 /// </summary>
 public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
@@ -296,30 +296,59 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
                 })
                 .TransitionTo(PaymentNotPaid));
 
-        // Sending Payment Failed Email
+        // PaymentNotPaid - awaiting payment retry via Payment API
         During(PaymentNotPaid,
+            When(PaymentCompleted)
+                .Then(context =>
+                {
+                    _logger.LogInformation("[Saga] PaymentCompleted (Retry) - OrderId: {OrderId}, PaymentId: {PaymentId}", context.Message.OrderId, context.Message.PaymentId);
+
+                    context.Saga.PaymentId = context.Message.PaymentId;
+                    context.Saga.PaymentTransactionId = context.Message.TransactionId;
+                    context.Saga.LastError = null;
+                    context.Saga.LastErrorCode = null;
+                    context.Saga.UpdatedAt = DateTime.UtcNow;
+                })
+                .PublishAsync(context =>
+                {
+                    _logger.LogInformation("[Saga] Publishing MarkOrderAsPaymentCompletedCommand - OrderId: {OrderId}", context.Saga.OrderId);
+
+                    return context.Init<MarkOrderAsPaymentCompletedCommand>(new
+                    {
+                        CorrelationId = context.Saga.CorrelationId,
+                        OrderId = context.Saga.OrderId,
+                        TransactionId = context.Message.TransactionId
+                    });
+                })
+                .PublishAsync(context =>
+                {
+                    _logger.LogInformation("[Saga] Publishing FulfillOrderCommand - OrderId: {OrderId}", context.Saga.OrderId);
+
+                    return context.Init<FulfillOrderCommand>(new
+                    {
+                        CorrelationId = context.Saga.CorrelationId,
+                        OrderId = context.Saga.OrderId,
+                        CustomerId = context.Saga.CustomerId,
+                        Items = JsonSerializer.Deserialize<List<FulfillmentItemDto>>(context.Saga.OrderItemsJson) ?? [],
+                        ShippingAddress = context.Saga.ShippingAddress
+                    });
+                })
+                .TransitionTo(Fulfilling),
+
             When(EmailSent)
                 .Then(context =>
                 {
-                    _logger.LogInformation("[Saga] EmailSent (PaymentFailed) - OrderId: {OrderId}. Saga cancelled.",
-                        context.Message.OrderId);
-
+                    _logger.LogInformation("[Saga] EmailSent (PaymentFailed) - OrderId: {OrderId}. Awaiting payment retry.", context.Message.OrderId);
                     context.Saga.UpdatedAt = DateTime.UtcNow;
-                    context.Saga.CompletedAt = DateTime.UtcNow;
-                }));
-                //.TransitionTo(Cancelled),
+                }),
 
             When(EmailFailed)
                 .Then(context =>
                 {
-                    _logger.LogWarning(
-                        "[Saga] EmailFailed (PaymentFailed) - OrderId: {OrderId}, Reason: {Reason}. Saga cancelled.",
-                        context.Message.OrderId, context.Message.Reason);
-
+                    _logger.LogWarning("[Saga] EmailFailed (PaymentFailed) - OrderId: {OrderId}, Reason: {Reason}. Awaiting payment retry.", context.Message.OrderId, context.Message.Reason);
                     context.Saga.UpdatedAt = DateTime.UtcNow;
-                    context.Saga.CompletedAt = DateTime.UtcNow;
-                });
-                //.TransitionTo(Cancelled));
+                })
+            );
 
         // Step 3: Fulfillment (Async)
         During(Fulfilling,

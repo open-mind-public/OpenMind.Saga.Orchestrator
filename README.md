@@ -23,15 +23,16 @@ This solution implements an **Order Placement Orchestrator** that coordinates a 
          │ 2. "place order" (with orderId)
          ▼
 ┌─────────────────────────────────────────────────────────────┐
-│              Order Placement Orchestrator                    │
+│              Order Placement Orchestrator                   │
 │           (MassTransit State Machine Saga)                  │
-│                                                              │
+│                                                             │
 │  States: Initial → Validating → PaymentProcessing →         │
 │          Fulfilling → SendingConfirmation → Completed       │
-│                                                              │
-│  Error States: PaymentFailed → SendingPaymentFailedEmail    │
-│               FulfillmentFailed → RefundingPayment →        │
-│               SendingBackorderEmail → Cancelled              │
+│                                                             │
+│  Retryable States: ValidationFailed, PaymentNotPaid         │
+│                                                             │
+│  Error States: FulfillmentFailed → RefundingPayment →       │
+│               SendingBackorderEmail → Cancelled             │
 └──────────────────────┬──────────────────────────────────────┘
                        │
     ┌──────────────────┼──────────────────┬───────────────────┐
@@ -39,14 +40,23 @@ This solution implements an **Order Placement Orchestrator** that coordinates a 
     ▼                  ▼                  ▼                   ▼
 ┌───────────┐   ┌───────────┐   ┌──────────────┐   ┌──────────┐
 │  Order    │   │  Payment  │   │ Fulfillment  │   │  Email   │
-│  Service  │   │  Service  │   │   Service    │   │ Service  │
+│  Service  │   │  Service  │◄──│   Service    │   │ Service  │
 │           │   │           │   │              │   │          │
-└───────────┘   └───────────┘   └──────────────┘   └──────────┘
-    │                │                 │                 │
-    ▼                ▼                 ▼                 ▼
-┌───────────────────────────────────────────────────────────────┐
-│                        MongoDB                                 │
-└───────────────────────────────────────────────────────────────┘
+└─────┬─────┘   └─────┬─────┘   └──────┬───────┘   └──────────┘
+      │               │                │                
+      ▼               ▼                ▼                
+┌───────────┐   ┌───────────┐   ┌──────────────┐   
+│  OrderDb  │   │ PaymentDb │   │FulfillmentDb │   
+│ (MongoDB) │   │ (MongoDB) │   │  (MongoDB)   │   
+└───────────┘   └───────────┘   └──────────────┘
+
+                      ▲
+                      │ 3. "retry payment" (when PaymentNotPaid)
+                      │    POST /api/payments/retry/{orderId}
+┌─────────────────────┴───┐
+│   Client/UI             │
+│   (on payment failure)  │
+└─────────────────────────┘
 ```
 
 ## 🚀 Features
@@ -79,32 +89,6 @@ Each service follows Clean Architecture with:
 - **FluentValidation** for request validation
 - **Serilog** for structured logging
 
-## 📁 Project Structure
-
-```
-src/
-├── BuildingBlocks/
-│   ├── OpenMind.BuildingBlocks.Domain/          # DDD building blocks
-│   ├── OpenMind.BuildingBlocks.Application/     # CQRS abstractions
-│   ├── OpenMind.BuildingBlocks.Infrastructure/  # MongoDB, persistence
-│   └── OpenMind.BuildingBlocks.IntegrationEvents/ # Shared events/commands
-│
-└── Services/
-    ├── Orchestrator/
-    │   └── OpenMind.Orchestrator.Api/           # Saga State Machine
-    ├── Order/
-    │   ├── OpenMind.Order.Domain/
-    │   ├── OpenMind.Order.Application/
-    │   ├── OpenMind.Order.Infrastructure/
-    │   └── OpenMind.Order.Api/
-    ├── Payment/
-    │   └── ... (same structure)
-    ├── Fulfillment/
-    │   └── ... (same structure)
-    └── Email/
-        └── ... (same structure)
-```
-
 ## 🔄 Workflow Scenarios
 
 ### Happy Path
@@ -115,13 +99,15 @@ src/
 5. **Send Confirmation** → Email notification sent (asynchronous)
 6. **Complete** → Saga finishes successfully
 
-### Payment Failure Path
+### Payment Failure Path (Retryable)
 1. **Create Order** → Order created in Order Service
 2. **Place Order** → Order validated
 3. **Process Payment** → Payment declined (expired card, etc.)
 4. **Update Order** → Mark as PaymentFailed
 5. **Send Notification** → Email customer about payment failure
-6. **Cancel** → Saga ends with cancelled state
+6. **Await Retry** → Saga enters PaymentNotPaid state (awaiting payment retry)
+7. **Retry Payment** → Customer retries via Payment API (`POST /api/payments/retry/{orderId}`)
+8. **Continue Flow** → On success, saga continues to Fulfilling → SendingConfirmation → Completed
 
 ### Out of Stock Path
 1. **Create Order** → Order created in Order Service
@@ -216,6 +202,13 @@ POST http://localhost:5000/api/orders/{orderId}/place
 ```bash
 GET http://localhost:5000/api/orders/{orderId}/status
 ```
+
+### Retry Payment
+When payment fails, the saga enters `PaymentNotPaid` state. Use this endpoint to retry:
+```bash
+POST http://localhost:5002/api/payments/retry/{orderId}
+```
+On success, the saga automatically continues from PaymentNotPaid → Fulfilling → SendingConfirmation → Completed.
 
 ### List All Orders
 ```bash
