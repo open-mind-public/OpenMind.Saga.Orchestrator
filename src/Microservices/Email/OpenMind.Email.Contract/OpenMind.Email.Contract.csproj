@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>OpenMind.Email.Contract</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\SharedKernel\OpenMind.Shared.IntegrationMessages\OpenMind.Shared.IntegrationMessages.csproj" />
+  </ItemGroup>
+
+</Project>

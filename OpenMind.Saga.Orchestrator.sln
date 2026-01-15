@@ -4,7 +4,7 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A0000000-0000-0000-0000-000000000001}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{A0000000-0000-0000-0000-000000000002}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SharedKernel", "SharedKernel", "{A0000000-0000-0000-0000-000000000002}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MicroServices", "MicroServices", "{A0000000-0000-0000-0000-000000000003}"
 EndProject
@@ -18,49 +18,49 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Email", "Email", "{A0000000
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OrderPlacementOrchestrator", "OrderPlacementOrchestrator", "{A0000000-0000-0000-0000-000000000008}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Shared.Domain", "src\BuildingBlocks\OpenMind.Shared.Domain\OpenMind.Shared.Domain.csproj", "{B1000001-0000-0000-0000-000000000001}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Shared.Domain", "src\SharedKernel\OpenMind.Shared.Domain\OpenMind.Shared.Domain.csproj", "{B1000001-0000-0000-0000-000000000001}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Shared.Application", "src\BuildingBlocks\OpenMind.Shared.Application\OpenMind.Shared.Application.csproj", "{B1000001-0000-0000-0000-000000000002}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Shared.Application", "src\SharedKernel\OpenMind.Shared.Application\OpenMind.Shared.Application.csproj", "{B1000001-0000-0000-0000-000000000002}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Shared.MongoDb", "src\BuildingBlocks\OpenMind.Shared.MongoDb\OpenMind.Shared.MongoDb.csproj", "{B1000001-0000-0000-0000-000000000003}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Shared.MongoDb", "src\SharedKernel\OpenMind.Shared.MongoDb\OpenMind.Shared.MongoDb.csproj", "{B1000001-0000-0000-0000-000000000003}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Shared.IntegrationMessages", "src\BuildingBlocks\OpenMind.Shared.IntegrationMessages\OpenMind.Shared.IntegrationMessages.csproj", "{B1000001-0000-0000-0000-000000000004}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Shared.IntegrationMessages", "src\SharedKernel\OpenMind.Shared.IntegrationMessages\OpenMind.Shared.IntegrationMessages.csproj", "{B1000001-0000-0000-0000-000000000004}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Order.Domain", "src\Services\Order\OpenMind.Order.Domain\OpenMind.Order.Domain.csproj", "{C1000001-0000-0000-0000-000000000001}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Order.Domain", "src\Microservices\Order\OpenMind.Order.Domain\OpenMind.Order.Domain.csproj", "{C1000001-0000-0000-0000-000000000001}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Order.Application", "src\Services\Order\OpenMind.Order.Application\OpenMind.Order.Application.csproj", "{C1000001-0000-0000-0000-000000000002}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Order.Application", "src\Microservices\Order\OpenMind.Order.Application\OpenMind.Order.Application.csproj", "{C1000001-0000-0000-0000-000000000002}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Order.Infrastructure", "src\Services\Order\OpenMind.Order.Infrastructure\OpenMind.Order.Infrastructure.csproj", "{C1000001-0000-0000-0000-000000000003}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Order.Infrastructure", "src\Microservices\Order\OpenMind.Order.Infrastructure\OpenMind.Order.Infrastructure.csproj", "{C1000001-0000-0000-0000-000000000003}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Order.Api", "src\Services\Order\OpenMind.Order.Api\OpenMind.Order.Api.csproj", "{C1000001-0000-0000-0000-000000000004}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Order.Api", "src\Microservices\Order\OpenMind.Order.Api\OpenMind.Order.Api.csproj", "{C1000001-0000-0000-0000-000000000004}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Payment.Domain", "src\Services\Payment\OpenMind.Payment.Domain\OpenMind.Payment.Domain.csproj", "{D1000001-0000-0000-0000-000000000001}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Payment.Domain", "src\Microservices\Payment\OpenMind.Payment.Domain\OpenMind.Payment.Domain.csproj", "{D1000001-0000-0000-0000-000000000001}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Payment.Application", "src\Services\Payment\OpenMind.Payment.Application\OpenMind.Payment.Application.csproj", "{D1000001-0000-0000-0000-000000000002}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Payment.Application", "src\Microservices\Payment\OpenMind.Payment.Application\OpenMind.Payment.Application.csproj", "{D1000001-0000-0000-0000-000000000002}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Payment.Infrastructure", "src\Services\Payment\OpenMind.Payment.Infrastructure\OpenMind.Payment.Infrastructure.csproj", "{D1000001-0000-0000-0000-000000000003}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Payment.Infrastructure", "src\Microservices\Payment\OpenMind.Payment.Infrastructure\OpenMind.Payment.Infrastructure.csproj", "{D1000001-0000-0000-0000-000000000003}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Payment.Api", "src\Services\Payment\OpenMind.Payment.Api\OpenMind.Payment.Api.csproj", "{D1000001-0000-0000-0000-000000000004}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Payment.Api", "src\Microservices\Payment\OpenMind.Payment.Api\OpenMind.Payment.Api.csproj", "{D1000001-0000-0000-0000-000000000004}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Fulfillment.Domain", "src\Services\Fulfillment\OpenMind.Fulfillment.Domain\OpenMind.Fulfillment.Domain.csproj", "{E1000001-0000-0000-0000-000000000001}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Fulfillment.Domain", "src\Microservices\Fulfillment\OpenMind.Fulfillment.Domain\OpenMind.Fulfillment.Domain.csproj", "{E1000001-0000-0000-0000-000000000001}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Fulfillment.Application", "src\Services\Fulfillment\OpenMind.Fulfillment.Application\OpenMind.Fulfillment.Application.csproj", "{E1000001-0000-0000-0000-000000000002}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Fulfillment.Application", "src\Microservices\Fulfillment\OpenMind.Fulfillment.Application\OpenMind.Fulfillment.Application.csproj", "{E1000001-0000-0000-0000-000000000002}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Fulfillment.Infrastructure", "src\Services\Fulfillment\OpenMind.Fulfillment.Infrastructure\OpenMind.Fulfillment.Infrastructure.csproj", "{E1000001-0000-0000-0000-000000000003}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Fulfillment.Infrastructure", "src\Microservices\Fulfillment\OpenMind.Fulfillment.Infrastructure\OpenMind.Fulfillment.Infrastructure.csproj", "{E1000001-0000-0000-0000-000000000003}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Fulfillment.Api", "src\Services\Fulfillment\OpenMind.Fulfillment.Api\OpenMind.Fulfillment.Api.csproj", "{E1000001-0000-0000-0000-000000000004}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Fulfillment.Api", "src\Microservices\Fulfillment\OpenMind.Fulfillment.Api\OpenMind.Fulfillment.Api.csproj", "{E1000001-0000-0000-0000-000000000004}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Email.Api", "src\Services\Email\OpenMind.Email.Api\OpenMind.Email.Api.csproj", "{F1000001-0000-0000-0000-000000000004}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Email.Api", "src\Microservices\Email\OpenMind.Email.Api\OpenMind.Email.Api.csproj", "{F1000001-0000-0000-0000-000000000004}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.OrderPlacement.Orchestrator.Api", "src\Services\Orchestrator\OpenMind.OrderPlacement.Orchestrator.Api\OpenMind.OrderPlacement.Orchestrator.Api.csproj", "{01000001-0000-0000-0000-000000000001}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.OrderPlacement.Orchestrator.Api", "src\Microservices\Orchestrator\OpenMind.OrderPlacement.Orchestrator.Api\OpenMind.OrderPlacement.Orchestrator.Api.csproj", "{01000001-0000-0000-0000-000000000001}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Order.Contract", "src\Services\Order\OpenMind.Order.Contract\OpenMind.Order.Contract.csproj", "{2FFB8447-D7B9-439E-9878-345959164AD0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Order.Contract", "src\Microservices\Order\OpenMind.Order.Contract\OpenMind.Order.Contract.csproj", "{2FFB8447-D7B9-439E-9878-345959164AD0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Payment.Contract", "src\Services\Payment\OpenMind.Payment.Contract\OpenMind.Payment.Contract.csproj", "{A2C7CFFB-C51F-4259-ABD5-A465D08A4B31}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Payment.Contract", "src\Microservices\Payment\OpenMind.Payment.Contract\OpenMind.Payment.Contract.csproj", "{A2C7CFFB-C51F-4259-ABD5-A465D08A4B31}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Fulfillment.Contract", "src\Services\Fulfillment\OpenMind.Fulfillment.Contract\OpenMind.Fulfillment.Contract.csproj", "{38E27262-DE05-45AF-8B47-0D1A3A778EF3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Fulfillment.Contract", "src\Microservices\Fulfillment\OpenMind.Fulfillment.Contract\OpenMind.Fulfillment.Contract.csproj", "{38E27262-DE05-45AF-8B47-0D1A3A778EF3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Email.Contract", "src\Services\Email\OpenMind.Email.Contract\OpenMind.Email.Contract.csproj", "{BCEED45B-D3C3-4E3E-8DF9-A2DD94B42644}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Email.Contract", "src\Microservices\Email\OpenMind.Email.Contract\OpenMind.Email.Contract.csproj", "{BCEED45B-D3C3-4E3E-8DF9-A2DD94B42644}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

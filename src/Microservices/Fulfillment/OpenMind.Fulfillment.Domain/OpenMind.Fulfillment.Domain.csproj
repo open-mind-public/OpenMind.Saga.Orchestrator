@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>OpenMind.Fulfillment.Domain</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\SharedKernel\OpenMind.Shared.Domain\OpenMind.Shared.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>OpenMind.Payment.Infrastructure</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MassTransit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\SharedKernel\OpenMind.Shared.MongoDb\OpenMind.Shared.MongoDb.csproj" />
+    <ProjectReference Include="..\OpenMind.Payment.Application\OpenMind.Payment.Application.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>OpenMind.Order.Application</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MassTransit" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\SharedKernel\OpenMind.Shared.Application\OpenMind.Shared.Application.csproj" />
+    <ProjectReference Include="..\OpenMind.Order.Contract\OpenMind.Order.Contract.csproj" />
+    <ProjectReference Include="..\OpenMind.Order.Domain\OpenMind.Order.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
