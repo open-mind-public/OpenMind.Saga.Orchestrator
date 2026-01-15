@@ -15,8 +15,7 @@ This solution implements an **Order Placement Orchestrator** that coordinates a 
          │ 1. "create order"                                   │
          ▼                                                     │
 ┌─────────────────────────────────────────────────────────────┐│
-│                    Order Service                            ││
-│            (Stores order data in MongoDB)                   ││
+│                       Order Service                         ││
 └─────────────────────────────────────────────────────────────┘│
                                                                │
          ┌─────────────────────────────────────────────────────┘
