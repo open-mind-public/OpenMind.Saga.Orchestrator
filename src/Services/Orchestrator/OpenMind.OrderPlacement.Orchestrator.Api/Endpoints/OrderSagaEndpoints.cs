@@ -43,7 +43,7 @@ public static class OrderSagaEndpoints
 
     private static async Task<IResult> GetOrderStatus(Guid orderId, IMongoDatabase database)
     {
-        var collection = database.GetCollection<OrderSagaState>("order_sagas");
+        var collection = database.GetCollection<OrderSagaState>("order_placement_sagas");
         var filter = Builders<OrderSagaState>.Filter.Eq(x => x.OrderId, orderId);
         var saga = await collection.Find(filter).FirstOrDefaultAsync();
 
@@ -67,7 +67,7 @@ public static class OrderSagaEndpoints
 
     private static async Task<IResult> GetOrders(IMongoDatabase database, int page = 1, int pageSize = 10)
     {
-        var collection = database.GetCollection<OrderSagaState>("order_sagas");
+        var collection = database.GetCollection<OrderSagaState>("order_placement_sagas");
         var totalCount = await collection.CountDocumentsAsync(_ => true);
         var sagas = await collection
             .Find(_ => true)

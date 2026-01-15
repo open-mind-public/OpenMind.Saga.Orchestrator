@@ -1,4 +1,4 @@
-# OpenMind Saga Orchestrator
+# Saga Orchestrator
 
 A comprehensive implementation of the **Saga Orchestrator Pattern** for distributed transactions in a microservices architecture.
 
@@ -10,13 +10,16 @@ This solution implements an **Order Placement Orchestrator** that coordinates a 
 ┌─────────────────┐
 │   Client/UI     │
 └────────┬────────┘
-         │ 1. "create order"
-         ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    Order Service                             │
-│            (Stores order data in MongoDB)                    │
-└─────────────────────────────────────────────────────────────┘
          │
+         ├─────────────────────────────────────────────────────┐
+         │ 1. "create order"                                   │
+         ▼                                                     │
+┌─────────────────────────────────────────────────────────────┐│
+│                    Order Service                             ││
+│            (Stores order data in MongoDB)                    ││
+└─────────────────────────────────────────────────────────────┘│
+                                                               │
+         ┌─────────────────────────────────────────────────────┘
          │ 2. "place order" (with orderId)
          ▼
 ┌─────────────────────────────────────────────────────────────┐
@@ -31,9 +34,9 @@ This solution implements an **Order Placement Orchestrator** that coordinates a 
 │               SendingBackorderEmail → Cancelled              │
 └──────────────────────┬──────────────────────────────────────┘
                        │
-    ┌──────────────────┼──────────────────┐
-    │                  │                   │
-    ▼                  ▼                   ▼
+    ┌──────────────────┼──────────────────┬───────────────────┐
+    │                  │                  │                   │
+    ▼                  ▼                  ▼                   ▼
 ┌───────────┐   ┌───────────┐   ┌──────────────┐   ┌──────────┐
 │  Order    │   │  Payment  │   │ Fulfillment  │   │  Email   │
 │  Service  │   │  Service  │   │   Service    │   │ Service  │
