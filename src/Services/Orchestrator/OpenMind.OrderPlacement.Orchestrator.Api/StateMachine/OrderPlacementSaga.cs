@@ -16,17 +16,17 @@ namespace OpenMind.OrderPlacement.Orchestrator.Api.StateMachine;
 /// Order Placement Saga State Machine using MassTransit Automatonymous.
 /// Implements the orchestrator pattern for coordinating the order placement workflow.
 /// 
-/// ASSUMPTION: Orders are created beforehand. The saga triggers the placement process.
-/// 
 /// Happy Path:
-/// 1. Pending → Validating (Validate order exists in Order Service)
-/// 2. Validating → PaymentProcessing (Process payment in Payment Service)
-/// 3. PaymentProcessing → Fulfilling (Fulfill order in Fulfillment Service - async)
-/// 4. Fulfilling → SendingConfirmation (Send confirmation email - async)
+/// 1. Initial → Validating (Validate order exists)
+/// 2. Validating → PaymentProcessing (Process payment)
+/// 3. PaymentProcessing → Fulfilling (Fulfill order)
+/// 4. Fulfilling → SendingConfirmation (Send confirmation email)
 /// 5. SendingConfirmation → Completed
 /// 
-/// Error Paths:
-/// - Validation Failed: Validating → Failed
+/// Error Paths (Retryable):
+/// - Validation Failed: Validating → ValidationFailed (retry allowed)
+/// 
+/// Error Paths (Terminal):
 /// - Payment Failed: PaymentProcessing → SendingPaymentFailedEmail → Cancelled
 /// - Out of Stock: Fulfilling → RefundingPayment → SendingBackorderEmail → Cancelled
 /// </summary>
@@ -39,13 +39,15 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
     public State PaymentProcessing { get; private set; } = null!;
     public State Fulfilling { get; private set; } = null!;
     public State SendingConfirmation { get; private set; } = null!;
-    public State RefundingPayment { get; private set; } = null!;
     public State SendingPaymentFailedEmail { get; private set; } = null!;
+    public State RefundingPayment { get; private set; } = null!;
     public State SendingBackorderEmail { get; private set; } = null!;
     public State SendingRefundEmail { get; private set; } = null!;
     public State Completed { get; private set; } = null!;
     public State Cancelled { get; private set; } = null!;
-    public State Failed { get; private set; } = null!;
+    
+    // Failed states (retryable)
+    public State ValidationFailed { get; private set; } = null!;
 
     // Events - Commands to start saga
     public Event<PlaceOrderCommand> PlaceOrder { get; private set; } = null!;
@@ -73,11 +75,16 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
 
         InstanceState(x => x.CurrentState);
 
-        // Configure event correlation
-        // PlaceOrderCommand creates saga with CorrelationId = OrderId
-        Event(() => PlaceOrder, e => e.CorrelateById(context => context.Message.OrderId));
+        Event(() => PlaceOrder, e =>
+        {
+            e.CorrelateById(context => context.Message.OrderId);
+            e.InsertOnInitial = true;
+            e.SetSagaFactory(context => new OrderSagaState
+            {
+                CorrelationId = context.Message.OrderId
+            });
+        });
 
-        // All response events correlate by OrderId (which matches the saga's CorrelationId)
         Event(() => OrderValidated, e =>
         {
             e.CorrelateById(context => context.Message.OrderId);
@@ -136,17 +143,11 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
                     context.Saga.CreatedAt = DateTime.UtcNow;
                     context.Saga.UpdatedAt = DateTime.UtcNow;
 
-                    _logger.LogInformation(
-                        "[Orchestrator] Received PlaceOrderCommand - OrderId: {OrderId}, CorrelationId: {CorrelationId}",
-                        context.Message.OrderId,
-                        context.Saga.CorrelationId);
+                    _logger.LogInformation("[Saga] PlaceOrder - OrderId: {OrderId}, CorrelationId: {CorrelationId}", context.Message.OrderId, context.Saga.CorrelationId);
                 })
                 .PublishAsync(context =>
                 {
-                    _logger.LogInformation(
-                        "[Orchestrator] Publishing ValidateOrderCommand - OrderId: {OrderId}, CorrelationId: {CorrelationId}",
-                        context.Saga.OrderId,
-                        context.Saga.CorrelationId);
+                    _logger.LogInformation("[Saga] Publishing ValidateOrderCommand - OrderId: {OrderId}", context.Saga.OrderId);
 
                     return context.Init<ValidateOrderCommand>(new
                     {
@@ -156,15 +157,37 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
                 })
                 .TransitionTo(Validating));
 
+        // Allow retry from ValidationFailed state
+        During(ValidationFailed,
+            When(PlaceOrder)
+                .Then(context =>
+                {
+                    _logger.LogInformation("[Saga] Retrying from ValidationFailed - OrderId: {OrderId}", context.Message.OrderId);
+                    context.Saga.LastError = null;
+                    context.Saga.RetryCount++;
+                    context.Saga.UpdatedAt = DateTime.UtcNow;
+                })
+                .PublishAsync(context => context.Init<ValidateOrderCommand>(new
+                {
+                    CorrelationId = context.Saga.CorrelationId,
+                    OrderId = context.Saga.OrderId
+                }))
+                .TransitionTo(Validating));
+
+        // Ignore retry for all other states
+        DuringAny(
+            When(PlaceOrder)
+                .Then(context =>
+                {
+                    _logger.LogWarning("[Saga] PlaceOrder ignored (in progress) - OrderId: {OrderId}, State: {State}", context.Message.OrderId, context.Saga.CurrentState);
+                }));
+
         // Step 1: Order Validation
         During(Validating,
             When(OrderValidated)
                 .Then(context =>
                 {
-                    _logger.LogInformation(
-                        "[Orchestrator] Received OrderValidatedEvent - OrderId: {OrderId}, CorrelationId: {CorrelationId}",
-                        context.Message.OrderId,
-                        context.Message.CorrelationId);
+                    _logger.LogInformation("[Saga] OrderValidated - OrderId: {OrderId}", context.Message.OrderId);
 
                     context.Saga.CustomerId = context.Message.CustomerId;
                     context.Saga.TotalAmount = context.Message.TotalAmount;
@@ -176,11 +199,7 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
                 })
                 .PublishAsync(context =>
                 {
-                    _logger.LogInformation(
-                        "[Orchestrator] Publishing ProcessPaymentCommand - OrderId: {OrderId}, Amount: {Amount}, CorrelationId: {CorrelationId}",
-                        context.Saga.OrderId,
-                        context.Saga.TotalAmount,
-                        context.Saga.CorrelationId);
+                    _logger.LogInformation("[Saga] Publishing ProcessPaymentCommand - OrderId: {OrderId}, Amount: {Amount}", context.Saga.OrderId, context.Saga.TotalAmount);
 
                     return context.Init<ProcessPaymentCommand>(new
                     {
@@ -198,27 +217,19 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
             When(OrderValidationFailed)
                 .Then(context =>
                 {
-                    _logger.LogWarning(
-                        "[Orchestrator] Received OrderValidationFailedEvent - OrderId: {OrderId}, Reason: {Reason}, CorrelationId: {CorrelationId}",
-                        context.Message.OrderId,
-                        context.Message.Reason,
-                        context.Message.CorrelationId);
+                    _logger.LogWarning("[Saga] OrderValidationFailed - OrderId: {OrderId}, Reason: {Reason}", context.Message.OrderId, context.Message.Reason);
 
                     context.Saga.LastError = context.Message.Reason;
                     context.Saga.UpdatedAt = DateTime.UtcNow;
                 })
-                .TransitionTo(Failed));
+                .TransitionTo(ValidationFailed));
 
         // Step 2: Payment Processing
         During(PaymentProcessing,
             When(PaymentCompleted)
                 .Then(context =>
                 {
-                    _logger.LogInformation(
-                        "[Orchestrator] Received PaymentCompletedEvent - OrderId: {OrderId}, PaymentId: {PaymentId}, CorrelationId: {CorrelationId}",
-                        context.Message.OrderId,
-                        context.Message.PaymentId,
-                        context.Message.CorrelationId);
+                    _logger.LogInformation("[Saga] PaymentCompleted - OrderId: {OrderId}, PaymentId: {PaymentId}", context.Message.OrderId, context.Message.PaymentId);
 
                     context.Saga.PaymentId = context.Message.PaymentId;
                     context.Saga.PaymentTransactionId = context.Message.TransactionId;
@@ -226,10 +237,7 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
                 })
                 .PublishAsync(context =>
                 {
-                    _logger.LogInformation(
-                        "[Orchestrator] Publishing MarkOrderAsPaymentCompletedCommand - OrderId: {OrderId}, CorrelationId: {CorrelationId}",
-                        context.Saga.OrderId,
-                        context.Saga.CorrelationId);
+                    _logger.LogInformation("[Saga] Publishing MarkOrderAsPaymentCompletedCommand - OrderId: {OrderId}", context.Saga.OrderId);
 
                     return context.Init<MarkOrderAsPaymentCompletedCommand>(new
                     {
@@ -240,10 +248,7 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
                 })
                 .PublishAsync(context =>
                 {
-                    _logger.LogInformation(
-                        "[Orchestrator] Publishing FulfillOrderCommand - OrderId: {OrderId}, CorrelationId: {CorrelationId}",
-                        context.Saga.OrderId,
-                        context.Saga.CorrelationId);
+                    _logger.LogInformation("[Saga] Publishing FulfillOrderCommand - OrderId: {OrderId}", context.Saga.OrderId);
 
                     return context.Init<FulfillOrderCommand>(new
                     {
@@ -259,11 +264,7 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
             When(PaymentFailed)
                 .Then(context =>
                 {
-                    _logger.LogWarning(
-                        "[Orchestrator] Received PaymentFailedEvent - OrderId: {OrderId}, Reason: {Reason}, CorrelationId: {CorrelationId}",
-                        context.Message.OrderId,
-                        context.Message.Reason,
-                        context.Message.CorrelationId);
+                    _logger.LogWarning("[Saga] PaymentFailed - OrderId: {OrderId}, Reason: {Reason}", context.Message.OrderId, context.Message.Reason);
 
                     context.Saga.LastError = context.Message.Reason;
                     context.Saga.LastErrorCode = context.Message.ErrorCode;
@@ -271,10 +272,7 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
                 })
                 .PublishAsync(context =>
                 {
-                    _logger.LogInformation(
-                        "[Orchestrator] Publishing MarkOrderAsPaymentFailedCommand - OrderId: {OrderId}, CorrelationId: {CorrelationId}",
-                        context.Saga.OrderId,
-                        context.Saga.CorrelationId);
+                    _logger.LogInformation("[Saga] Publishing MarkOrderAsPaymentFailedCommand - OrderId: {OrderId}", context.Saga.OrderId);
 
                     return context.Init<MarkOrderAsPaymentFailedCommand>(new
                     {
@@ -285,10 +283,7 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
                 })
                 .PublishAsync(context =>
                 {
-                    _logger.LogInformation(
-                        "[Orchestrator] Publishing SendPaymentFailedEmailCommand - OrderId: {OrderId}, CorrelationId: {CorrelationId}",
-                        context.Saga.OrderId,
-                        context.Saga.CorrelationId);
+                    _logger.LogInformation("[Saga] Publishing SendPaymentFailedEmailCommand - OrderId: {OrderId}", context.Saga.OrderId);
 
                     return context.Init<SendPaymentFailedEmailCommand>(new
                     {
@@ -297,21 +292,39 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
                         CustomerId = context.Saga.CustomerId,
                         CustomerEmail = context.Saga.CustomerEmail,
                         CustomerName = context.Saga.CustomerName,
-                        FailureReason = context.Message.Reason
+                        Reason = context.Message.Reason
                     });
                 })
                 .TransitionTo(SendingPaymentFailedEmail));
+
+        // Sending Payment Failed Email
+        During(SendingPaymentFailedEmail,
+            When(EmailSent)
+                .Then(context =>
+                {
+                    _logger.LogInformation("[Saga] EmailSent (PaymentFailed) - OrderId: {OrderId}. Saga cancelled.", context.Message.OrderId);
+
+                    context.Saga.UpdatedAt = DateTime.UtcNow;
+                    context.Saga.CompletedAt = DateTime.UtcNow;
+                })
+                .TransitionTo(Cancelled),
+
+            When(EmailFailed)
+                .Then(context =>
+                {
+                    _logger.LogWarning("[Saga] EmailFailed (PaymentFailed) - OrderId: {OrderId}, Reason: {Reason}. Saga cancelled.", context.Message.OrderId, context.Message.Reason);
+
+                    context.Saga.UpdatedAt = DateTime.UtcNow;
+                    context.Saga.CompletedAt = DateTime.UtcNow;
+                })
+                .TransitionTo(Cancelled));
 
         // Step 3: Fulfillment (Async)
         During(Fulfilling,
             When(OrderShipped)
                 .Then(context =>
                 {
-                    _logger.LogInformation(
-                        "[Orchestrator] Received OrderShippedEvent - OrderId: {OrderId}, TrackingNumber: {TrackingNumber}, CorrelationId: {CorrelationId}",
-                        context.Message.OrderId,
-                        context.Message.TrackingNumber,
-                        context.Message.CorrelationId);
+                    _logger.LogInformation("[Saga] OrderShipped - OrderId: {OrderId}, TrackingNumber: {TrackingNumber}", context.Message.OrderId, context.Message.TrackingNumber);
 
                     context.Saga.FulfillmentId = context.Message.FulfillmentId;
                     context.Saga.TrackingNumber = context.Message.TrackingNumber;
@@ -320,10 +333,7 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
                 })
                 .PublishAsync(context =>
                 {
-                    _logger.LogInformation(
-                        "[Orchestrator] Publishing MarkOrderAsShippedCommand - OrderId: {OrderId}, CorrelationId: {CorrelationId}",
-                        context.Saga.OrderId,
-                        context.Saga.CorrelationId);
+                    _logger.LogInformation("[Saga] Publishing MarkOrderAsShippedCommand - OrderId: {OrderId}", context.Saga.OrderId);
 
                     return context.Init<MarkOrderAsShippedCommand>(new
                     {
@@ -334,10 +344,7 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
                 })
                 .PublishAsync(context =>
                 {
-                    _logger.LogInformation(
-                        "[Orchestrator] Publishing SendOrderConfirmationEmailCommand - OrderId: {OrderId}, CorrelationId: {CorrelationId}",
-                        context.Saga.OrderId,
-                        context.Saga.CorrelationId);
+                    _logger.LogInformation("[Saga] Publishing SendOrderConfirmationEmailCommand - OrderId: {OrderId}", context.Saga.OrderId);
 
                     return context.Init<SendOrderConfirmationEmailCommand>(new
                     {
@@ -355,21 +362,14 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
             When(FulfillmentFailed)
                 .Then(context =>
                 {
-                    _logger.LogWarning(
-                        "[Orchestrator] Received FulfillmentFailedEvent - OrderId: {OrderId}, Reason: {Reason}, CorrelationId: {CorrelationId}",
-                        context.Message.OrderId,
-                        context.Message.Reason,
-                        context.Message.CorrelationId);
+                    _logger.LogWarning("[Saga] FulfillmentFailed - OrderId: {OrderId}, Reason: {Reason}", context.Message.OrderId, context.Message.Reason);
 
                     context.Saga.LastError = context.Message.Reason;
                     context.Saga.UpdatedAt = DateTime.UtcNow;
                 })
                 .PublishAsync(context =>
                 {
-                    _logger.LogInformation(
-                        "[Orchestrator] Publishing MarkOrderAsBackOrderedCommand - OrderId: {OrderId}, CorrelationId: {CorrelationId}",
-                        context.Saga.OrderId,
-                        context.Saga.CorrelationId);
+                    _logger.LogInformation("[Saga] Publishing MarkOrderAsBackOrderedCommand - OrderId: {OrderId}", context.Saga.OrderId);
 
                     return context.Init<MarkOrderAsBackOrderedCommand>(new
                     {
@@ -380,10 +380,7 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
                 })
                 .PublishAsync(context =>
                 {
-                    _logger.LogInformation(
-                        "[Orchestrator] Publishing RefundPaymentCommand - OrderId: {OrderId}, CorrelationId: {CorrelationId}",
-                        context.Saga.OrderId,
-                        context.Saga.CorrelationId);
+                    _logger.LogInformation("[Saga] Publishing RefundPaymentCommand - OrderId: {OrderId}", context.Saga.OrderId);
 
                     return context.Init<RefundPaymentCommand>(new
                     {
@@ -401,19 +398,13 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
             When(PaymentRefunded)
                 .Then(context =>
                 {
-                    _logger.LogInformation(
-                        "[Orchestrator] Received PaymentRefundedEvent - OrderId: {OrderId}, CorrelationId: {CorrelationId}",
-                        context.Message.OrderId,
-                        context.Message.CorrelationId);
+                    _logger.LogInformation("[Saga] PaymentRefunded - OrderId: {OrderId}", context.Message.OrderId);
 
                     context.Saga.UpdatedAt = DateTime.UtcNow;
                 })
                 .PublishAsync(context =>
                 {
-                    _logger.LogInformation(
-                        "[Orchestrator] Publishing SendBackorderEmailCommand - OrderId: {OrderId}, CorrelationId: {CorrelationId}",
-                        context.Saga.OrderId,
-                        context.Saga.CorrelationId);
+                    _logger.LogInformation("[Saga] Publishing SendBackorderEmailCommand - OrderId: {OrderId}", context.Saga.OrderId);
 
                     return context.Init<SendBackorderEmailCommand>(new
                     {
@@ -428,55 +419,19 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
                 })
                 .TransitionTo(SendingBackorderEmail));
 
-        // Sending Payment Failed Email
-        During(SendingPaymentFailedEmail,
-            When(EmailSent)
-                .Then(context =>
-                {
-                    _logger.LogInformation(
-                        "[Orchestrator] Received EmailSentEvent (PaymentFailed) - OrderId: {OrderId}, CorrelationId: {CorrelationId}",
-                        context.Message.OrderId,
-                        context.Message.CorrelationId);
-
-                    context.Saga.UpdatedAt = DateTime.UtcNow;
-                    context.Saga.CompletedAt = DateTime.UtcNow;
-                })
-                .TransitionTo(Cancelled),
-
-            When(EmailFailed)
-                .Then(context =>
-                {
-                    _logger.LogWarning(
-                        "[Orchestrator] Received EmailFailedEvent (PaymentFailed) - OrderId: {OrderId}, Reason: {Reason}, CorrelationId: {CorrelationId}",
-                        context.Message.OrderId,
-                        context.Message.Reason,
-                        context.Message.CorrelationId);
-
-                    context.Saga.UpdatedAt = DateTime.UtcNow;
-                    context.Saga.CompletedAt = DateTime.UtcNow;
-                })
-                .TransitionTo(Cancelled)
-        );
-
         // Sending Backorder Email
         During(SendingBackorderEmail,
             When(EmailSent)
                 .Then(context =>
                 {
-                    _logger.LogInformation(
-                        "[Orchestrator] Received EmailSentEvent (Backorder) - OrderId: {OrderId}, CorrelationId: {CorrelationId}",
-                        context.Message.OrderId,
-                        context.Message.CorrelationId);
+                    _logger.LogInformation("[Saga] EmailSent (Backorder) - OrderId: {OrderId}", context.Message.OrderId);
 
                     context.Saga.UpdatedAt = DateTime.UtcNow;
                     context.Saga.CompletedAt = DateTime.UtcNow;
                 })
                 .PublishAsync(context =>
                 {
-                    _logger.LogInformation(
-                        "[Orchestrator] Publishing SendRefundEmailCommand - OrderId: {OrderId}, CorrelationId: {CorrelationId}",
-                        context.Saga.OrderId,
-                        context.Saga.CorrelationId);
+                    _logger.LogInformation("[Saga] Publishing SendRefundEmailCommand - OrderId: {OrderId}", context.Saga.OrderId);
 
                     return context.Init<SendRefundEmailCommand>(new
                     {
@@ -493,11 +448,7 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
             When(EmailFailed)
                 .Then(context =>
                 {
-                    _logger.LogWarning(
-                        "[Orchestrator] Received EmailFailedEvent (Backorder) - OrderId: {OrderId}, Reason: {Reason}, CorrelationId: {CorrelationId}",
-                        context.Message.OrderId,
-                        context.Message.Reason,
-                        context.Message.CorrelationId);
+                    _logger.LogWarning("[Saga] EmailFailed (Backorder) - OrderId: {OrderId}, Reason: {Reason}", context.Message.OrderId, context.Message.Reason);
 
                     context.Saga.UpdatedAt = DateTime.UtcNow;
                     context.Saga.CompletedAt = DateTime.UtcNow;
@@ -509,10 +460,7 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
             When(EmailSent)
                 .Then(context =>
                 {
-                    _logger.LogInformation(
-                        "[Orchestrator] Received EmailSentEvent (Refund) - OrderId: {OrderId}, CorrelationId: {CorrelationId}. Saga completed with Cancelled state.",
-                        context.Message.OrderId,
-                        context.Message.CorrelationId);
+                    _logger.LogInformation("[Saga] EmailSent (Refund) - OrderId: {OrderId}. Saga cancelled.", context.Message.OrderId);
 
                     context.Saga.UpdatedAt = DateTime.UtcNow;
                     context.Saga.CompletedAt = DateTime.UtcNow;
@@ -522,11 +470,7 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
             When(EmailFailed)
                 .Then(context =>
                 {
-                    _logger.LogWarning(
-                        "[Orchestrator] Received EmailFailedEvent (Refund) - OrderId: {OrderId}, Reason: {Reason}, CorrelationId: {CorrelationId}. Saga completed with Cancelled state.",
-                        context.Message.OrderId,
-                        context.Message.Reason,
-                        context.Message.CorrelationId);
+                    _logger.LogWarning("[Saga] EmailFailed (Refund) - OrderId: {OrderId}, Reason: {Reason}. Saga cancelled.", context.Message.OrderId, context.Message.Reason);
 
                     context.Saga.UpdatedAt = DateTime.UtcNow;
                     context.Saga.CompletedAt = DateTime.UtcNow;
@@ -538,10 +482,7 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
             When(EmailSent)
                 .Then(context =>
                 {
-                    _logger.LogInformation(
-                        "[Orchestrator] Received EmailSentEvent (Confirmation) - OrderId: {OrderId}, CorrelationId: {CorrelationId}. Saga completed successfully!",
-                        context.Message.OrderId,
-                        context.Message.CorrelationId);
+                    _logger.LogInformation("[Saga] EmailSent (Confirmation) - OrderId: {OrderId}. Saga completed!", context.Message.OrderId);
 
                     context.Saga.UpdatedAt = DateTime.UtcNow;
                     context.Saga.CompletedAt = DateTime.UtcNow;
@@ -551,11 +492,7 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
             When(EmailFailed)
                 .Then(context =>
                 {
-                    _logger.LogWarning(
-                        "[Orchestrator] Received EmailFailedEvent (Confirmation) - OrderId: {OrderId}, Reason: {Reason}, CorrelationId: {CorrelationId}. Saga completed (email failed but order processed).",
-                        context.Message.OrderId,
-                        context.Message.Reason,
-                        context.Message.CorrelationId);
+                    _logger.LogWarning("[Saga] EmailFailed (Confirmation) - OrderId: {OrderId}, Reason: {Reason}. Order processed.", context.Message.OrderId, context.Message.Reason);
 
                     context.Saga.UpdatedAt = DateTime.UtcNow;
                     context.Saga.CompletedAt = DateTime.UtcNow;
