@@ -18,7 +18,6 @@ public class MarkPaymentAsFailedCommandHandler(IPaymentRepository paymentReposit
                 return CommandResult<bool>.Failure($"Payment {request.PaymentId} not found", "PAYMENT_NOT_FOUND");
             }
 
-            // Mark as failed - this publishes PaymentFailedDomainEvent
             payment.MarkAsFailed(request.Reason);
 
             await paymentRepository.UpdateAsync(payment, cancellationToken);

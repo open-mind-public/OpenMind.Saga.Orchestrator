@@ -1,7 +1,7 @@
 using MassTransit;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace OpenMind.OrderPlacement.Orchestrator.Api.StateMachine;
+namespace OpenMind.OrderPlacement.Orchestrator.Api;
 
 public class OrderSagaState : SagaStateMachineInstance, ISagaVersion
 {

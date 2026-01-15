@@ -84,6 +84,7 @@ public class Payment : AggregateRoot<Guid>
         Status = PaymentStatus.Failed;
         FailureReason = reason;
         SetUpdatedAt();
+        
         Emit(new PaymentFailedDomainEvent(Id, OrderId, reason));
     }
 
@@ -104,5 +105,16 @@ public class Payment : AggregateRoot<Guid>
         FailureReason = reason;
         SetUpdatedAt();
         Emit(new PaymentRefundFailedDomainEvent(Id, OrderId, reason, correlationId));
+    }
+
+    public void Retry()
+    {
+        CheckRule(new PaymentMustBeInStatusRule(Status, PaymentStatus.Failed, "retry"));
+
+        Status = PaymentStatus.Processing;
+        FailureReason = null;
+        SetUpdatedAt();
+        
+        Emit(new PaymentProcessingStartedDomainEvent(Id, OrderId, Amount, "", ""));
     }
 }

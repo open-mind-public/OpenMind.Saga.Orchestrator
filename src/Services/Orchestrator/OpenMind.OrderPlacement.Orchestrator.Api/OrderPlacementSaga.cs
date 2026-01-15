@@ -1,6 +1,5 @@
 using System.Text.Json;
 using MassTransit;
-using Microsoft.Extensions.Logging;
 using OpenMind.Email.Contract.Commands;
 using OpenMind.Email.Contract.Events;
 using OpenMind.Fulfillment.Contract.Commands;
@@ -10,7 +9,7 @@ using OpenMind.Order.Contract.Events;
 using OpenMind.Payment.Contract.Commands;
 using OpenMind.Payment.Contract.Events;
 
-namespace OpenMind.OrderPlacement.Orchestrator.Api.StateMachine;
+namespace OpenMind.OrderPlacement.Orchestrator.Api;
 
 /// <summary>
 /// Order Placement Saga State Machine using MassTransit Automatonymous.
@@ -39,7 +38,7 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
     public State PaymentProcessing { get; private set; } = null!;
     public State Fulfilling { get; private set; } = null!;
     public State SendingConfirmation { get; private set; } = null!;
-    public State SendingPaymentFailedEmail { get; private set; } = null!;
+    public State PaymentNotPaid { get; private set; } = null!;
     public State RefundingPayment { get; private set; } = null!;
     public State SendingBackorderEmail { get; private set; } = null!;
     public State SendingRefundEmail { get; private set; } = null!;
@@ -295,29 +294,32 @@ public class OrderPlacementSaga : MassTransitStateMachine<OrderSagaState>
                         Reason = context.Message.Reason
                     });
                 })
-                .TransitionTo(SendingPaymentFailedEmail));
+                .TransitionTo(PaymentNotPaid));
 
         // Sending Payment Failed Email
-        During(SendingPaymentFailedEmail,
+        During(PaymentNotPaid,
             When(EmailSent)
                 .Then(context =>
                 {
-                    _logger.LogInformation("[Saga] EmailSent (PaymentFailed) - OrderId: {OrderId}. Saga cancelled.", context.Message.OrderId);
+                    _logger.LogInformation("[Saga] EmailSent (PaymentFailed) - OrderId: {OrderId}. Saga cancelled.",
+                        context.Message.OrderId);
 
                     context.Saga.UpdatedAt = DateTime.UtcNow;
                     context.Saga.CompletedAt = DateTime.UtcNow;
-                })
-                .TransitionTo(Cancelled),
+                }));
+                //.TransitionTo(Cancelled),
 
             When(EmailFailed)
                 .Then(context =>
                 {
-                    _logger.LogWarning("[Saga] EmailFailed (PaymentFailed) - OrderId: {OrderId}, Reason: {Reason}. Saga cancelled.", context.Message.OrderId, context.Message.Reason);
+                    _logger.LogWarning(
+                        "[Saga] EmailFailed (PaymentFailed) - OrderId: {OrderId}, Reason: {Reason}. Saga cancelled.",
+                        context.Message.OrderId, context.Message.Reason);
 
                     context.Saga.UpdatedAt = DateTime.UtcNow;
                     context.Saga.CompletedAt = DateTime.UtcNow;
-                })
-                .TransitionTo(Cancelled));
+                });
+                //.TransitionTo(Cancelled));
 
         // Step 3: Fulfillment (Async)
         During(Fulfilling,

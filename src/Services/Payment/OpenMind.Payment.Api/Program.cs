@@ -102,6 +102,7 @@ if (app.Environment.IsDevelopment())
 
 // Map endpoints
 app.MapHealthEndpoints("Payment");
+app.MapPaymentEndpoints();
 
 Log.Information("Payment Service starting...");
 app.Run();
