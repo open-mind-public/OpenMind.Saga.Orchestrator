@@ -4,9 +4,9 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A0000000-0000-0000-0000-000000000001}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BuildingBlocks", "BuildingBlocks", "{A0000000-0000-0000-0000-000000000002}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{A0000000-0000-0000-0000-000000000002}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{A0000000-0000-0000-0000-000000000003}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MicroServices", "MicroServices", "{A0000000-0000-0000-0000-000000000003}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Order", "Order", "{A0000000-0000-0000-0000-000000000004}"
 EndProject
@@ -16,7 +16,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Fulfillment", "Fulfillment"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Email", "Email", "{A0000000-0000-0000-0000-000000000007}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Orchestrator", "Orchestrator", "{A0000000-0000-0000-0000-000000000008}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OrderPlacementOrchestrator", "OrderPlacementOrchestrator", "{A0000000-0000-0000-0000-000000000008}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMind.Shared.Domain", "src\BuildingBlocks\OpenMind.Shared.Domain\OpenMind.Shared.Domain.csproj", "{B1000001-0000-0000-0000-000000000001}"
 EndProject
