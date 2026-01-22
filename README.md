@@ -245,16 +245,6 @@ Each service has its own database:
 }
 ```
 
-### Service Ports
-| Service | Port |
-|---------|------|
-| Orchestrator | 5000 |
-| Order | 5001 |
-| Payment | 5002 |
-| Fulfillment | 5003 |
-| Email | 5004 |
-| MongoDB | 27017 |
-
 ## 📚 Key Concepts
 
 ### Saga State Machine States
